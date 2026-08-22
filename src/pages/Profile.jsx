@@ -3,13 +3,14 @@ import * as I from 'lucide-react';
 import { Card, Identity } from '../ui/Shared';
 import { STYLES } from '../screens/Boot';
 import { recalcIdentity } from '../engine/identity';
+import { asset } from '../assetPath';
 
 export default function Profile({ data, setData, notify }) {
   const [p, setP] = useState(data.profile);
   const save = () => { setData(d => ({ ...d, profile: { ...p } })); notify('Profile updated'); };
   const recalc = () => { setData(d => ({ ...d, identity: recalcIdentity(p, d.workouts) })); notify('Identity recalculated from your current profile'); };
   return <section className="page">
-    <div className="profileTop"><div className="bigAvatar"><img src="/anvil-mark.png" alt="ANVIL" /></div><div><span className="eyebrow">TRAINING IDENTITY</span><h2>{p.name || 'Athlete'}</h2><p>{p.experience || '—'} · {p.goal || '—'} · {p.frequency} days/week</p></div></div>
+    <div className="profileTop"><div className="bigAvatar"><img src={asset("anvil-mark.png")} alt="ANVIL" /></div><div><span className="eyebrow">TRAINING IDENTITY</span><h2>{p.name || 'Athlete'}</h2><p>{p.experience || '—'} · {p.goal || '—'} · {p.frequency} days/week</p></div></div>
     <div className="grid two">
       <Card title="Athlete data">
         <div className="formGrid">

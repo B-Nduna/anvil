@@ -1,8 +1,21 @@
 # ANVIL — Training OS
 
+**[Live demo →](https://b-nduna.github.io/anvil/)**
+
 A dark, no-fluff training console: onboarding wizard, an auto-generated weekly
 training calendar, a workout-selection engine with progressive overload, and
 a validated strength-standards reference — all running client-side.
+
+## Screenshots
+
+<!--
+  Add screenshots here once the app is live — a few PNGs dropped into a
+  /screenshots folder and referenced like this work well on GitHub:
+
+  | Onboarding | Dashboard | Active session |
+  |---|---|---|
+  | ![onboarding](screenshots/onboarding.png) | ![dashboard](screenshots/dashboard.png) | ![workout](screenshots/workout.png) |
+-->
 
 ## Highlights
 
@@ -36,6 +49,22 @@ real backend is the next step). Icons via `lucide-react`.
 ```bash
 npm install
 npm run dev
+```
+
+## Deployment
+
+Deploys automatically to GitHub Pages via `.github/workflows/deploy.yml` on
+every push to `main`. One-time setup after pushing: in the repo, go to
+**Settings → Pages → Source** and select **GitHub Actions**. The next push
+(or a manual run from the **Actions** tab) will publish the site to
+`https://<your-username>.github.io/anvil/`.
+
+The Vite `base` path is set to `/anvil/` in `vite.config.js` to match that
+URL. If you fork this under a different repo name, or deploy to a custom
+domain, build with `VITE_BASE=/` (or your subpath) to override it:
+
+```bash
+VITE_BASE=/ npm run build
 ```
 
 ## Project structure

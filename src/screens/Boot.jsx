@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import * as I from 'lucide-react';
 import { Step } from '../ui/Shared';
 import { STYLE_POOL } from '../engine/calendar';
+import { asset } from '../assetPath';
 
 export function LoadingScreen() {
-  return <div className="bootScreen"><div className="bootMark"><img src="/anvil-mark.png" alt="ANVIL" /></div><div className="bootWord">ANVIL</div><div className="bootSpin"><i /></div></div>;
+  return <div className="bootScreen"><div className="bootMark"><img src={asset("anvil-mark.png")} alt="ANVIL" /></div><div className="bootWord">ANVIL</div><div className="bootSpin"><i /></div></div>;
 }
 
 export function AuthScreen({ onSignIn, onGuest, onDemo }) {
@@ -12,7 +13,7 @@ export function AuthScreen({ onSignIn, onGuest, onDemo }) {
   const [email, setEmail] = useState(''); const [name, setName] = useState(''); const [pass, setPass] = useState('');
   const submit = e => { e.preventDefault(); if (!email || !pass) return; onSignIn({ name: name || email.split('@')[0], email }); };
   return <div className="authScreen"><div className="authCard">
-    <div className="brand center"><span className="mark"><img src="/anvil-mark.png" alt="ANVIL" /></span><div><b>ANVIL</b><small>TRAINING OS</small></div></div>
+    <div className="brand center"><span className="mark"><img src={asset("anvil-mark.png")} alt="ANVIL" /></span><div><b>ANVIL</b><small>TRAINING OS</small></div></div>
     <h1 className="authTitle">Train like you mean it.</h1>
     <p className="authSub">No fluff, no feeds — just your training, tracked properly.</p>
     <div className="authTabs"><button className={mode === 'signin' ? 'active' : ''} onClick={() => setMode('signin')}>Sign in</button><button className={mode === 'signup' ? 'active' : ''} onClick={() => setMode('signup')}>Create account</button></div>
@@ -54,7 +55,7 @@ export function Onboarding({ account, onDone }) {
   const finish = () => onDone({ ...p, weight: Number(p.weight), height: Number(p.height), frequency: Number(p.frequency) });
   const k = steps[step];
   return <div className="onboard">
-    <div className="onboardTop"><div className="onboardHead"><span className="mark small"><img src="/anvil-mark.png" alt="ANVIL" /></span><span className="eyebrow">BUILDING YOUR TRAINING IDENTITY</span></div><div className="bar onboardBar"><i style={{ width: pct + '%' }} /></div><div className="onboardPct">{pct}%</div></div>
+    <div className="onboardTop"><div className="onboardHead"><span className="mark small"><img src={asset("anvil-mark.png")} alt="ANVIL" /></span><span className="eyebrow">BUILDING YOUR TRAINING IDENTITY</span></div><div className="bar onboardBar"><i style={{ width: pct + '%' }} /></div><div className="onboardPct">{pct}%</div></div>
     <div className="onboardBody">
       {k === 'basics' && <Step title="Let's start with the basics" sub="This tailors load recommendations and lets you track real progress.">
         <div className="formGrid"><label>Name<input value={p.name} onChange={e => set('name', e.target.value)} placeholder="Your name" autoFocus /></label><label>Weight (kg)<input type="number" value={p.weight} onChange={e => set('weight', e.target.value)} placeholder="82" /></label><label>Height (cm)<input type="number" value={p.height} onChange={e => set('height', e.target.value)} placeholder="178" /></label></div>
@@ -92,5 +93,5 @@ export function BuildingScreen({ onDone }) {
     }, 260);
     return () => clearInterval(t);
   }, []);
-  return <div className="bootScreen build"><div className="bootMark"><img src="/anvil-mark.png" alt="ANVIL" /></div><div className="buildPct">{pct}%</div><div className="bar buildBar"><i style={{ width: pct + '%' }} /></div><div className="buildMsg">{msg}</div></div>;
+  return <div className="bootScreen build"><div className="bootMark"><img src={asset("anvil-mark.png")} alt="ANVIL" /></div><div className="buildPct">{pct}%</div><div className="bar buildBar"><i style={{ width: pct + '%' }} /></div><div className="buildMsg">{msg}</div></div>;
 }

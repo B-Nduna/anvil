@@ -4,6 +4,7 @@ import { seed, demo, loadState, saveState, loadAccount, saveAccount, clearAll } 
 import { buildCalendar } from './engine/calendar';
 import { recalcIdentity } from './engine/identity';
 import { generateWorkout } from './engine/workoutEngine';
+import { asset } from './assetPath';
 import { LoadingScreen, AuthScreen, Onboarding, BuildingScreen } from './screens/Boot';
 import Dashboard from './pages/Dashboard';
 import Train from './pages/Train';
@@ -74,7 +75,7 @@ export default function App() {
 
   return <div className="app">
     <aside>
-      <div className="brand"><span className="mark"><img src="/anvil-mark.png" alt="ANVIL" /></span><div><b>ANVIL</b><small>TRAINING OS</small></div></div>
+      <div className="brand"><span className="mark"><img src={asset("anvil-mark.png")} alt="ANVIL" /></span><div><b>ANVIL</b><small>TRAINING OS</small></div></div>
       <nav>{nav.map(([id, l, Icon]) => <button className={page === id ? 'active' : ''} onClick={() => setPage(id)} key={id} title={l}><Icon size={18} /><span>{l}</span></button>)}</nav>
       <div className="sideFoot">
         <div className="streak"><span>WEEKLY GOAL</span><strong>{weeklyDone}/{freqTarget || '—'}</strong><div className="bar"><i style={{ width: consistency + '%' }} /></div></div>
@@ -84,7 +85,7 @@ export default function App() {
     <main>
       <header>
         <div><span className="eyebrow">{today.toUpperCase()}</span><h1>{pageTitle(page)}</h1><p className="pageSub">{pageSubtitle(page)}</p></div>
-        <div className="headActions"><button className="iconBtn" onClick={() => notify('No new notifications')} title="Notifications"><I.Bell size={18} /></button><button className="avatar" onClick={() => setPage('profile')} title="Profile"><img src="/anvil-mark.png" alt="ANVIL" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /></button></div>
+        <div className="headActions"><button className="iconBtn" onClick={() => notify('No new notifications')} title="Notifications"><I.Bell size={18} /></button><button className="avatar" onClick={() => setPage('profile')} title="Profile"><img src={asset("anvil-mark.png")} alt="ANVIL" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /></button></div>
       </header>
       {page === 'home' && <Dashboard data={data} go={setPage} start={setActive} weeklyDone={weeklyDone} freqTarget={freqTarget} />}
       {page === 'train' && <Train data={data} setData={setData} start={setActive} notify={notify}
