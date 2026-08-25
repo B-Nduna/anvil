@@ -72,6 +72,29 @@ export function bodyComposition(profile) {
   return { bmi: Math.round(bmi * 10) / 10, category };
 }
 
+/*
+ * Limitations: a short curated list of common areas, each mapping to a small,
+ * transparent exclusion set (exercise-name keywords). This is a basic keyword
+ * filter, not a clinical assessment — it's deliberately conservative and never
+ * claims to understand an injury. Free-text notes the athlete adds are stored
+ * and surfaced in the workout modal, but are NOT used to filter automatically,
+ * since arbitrary text can't be safely interpreted.
+ */
+export const LIMITATION_OPTIONS = ['Knee', 'Shoulder', 'Lower back', 'Wrist', 'Hip', 'Elbow'];
+const LIMITATION_EXCLUDE = {
+  'Knee': ['squat', 'lunge', 'jump', 'step up', 'step-up', 'box jump'],
+  'Shoulder': ['overhead press', 'shoulder press', 'lateral raise', 'upright row', 'behind the neck', 'dip'],
+  'Lower back': ['deadlift', 'good morning', 'hyperextension', 'row', 'clean'],
+  'Wrist': ['push-up', 'push up', 'bench press', 'front squat', 'curl'],
+  'Hip': ['squat', 'lunge', 'hip thrust', 'leg press'],
+  'Elbow': ['curl', 'pushdown', 'extension', 'dip'],
+};
+function excludedByLimitations(ex, limitations) {
+  if (!limitations || !limitations.length) return false;
+  const name = ex.name.toLowerCase();
+  return limitations.some(l => (LIMITATION_EXCLUDE[l] || []).some(kw => name.includes(kw)));
+}
+
 const PR_MAP = { 'Back Squat': 'Squat', 'Deadlift': 'Deadlift', 'Barbell Bench Press': 'Bench Press' };
 const STANDARD_LIFT = { 'Back Squat': 'squat', 'Deadlift': 'deadlift', 'Barbell Bench Press': 'bench' };
 /* Accessory-lift estimate, expressed as a fraction of the nearest anchor-lift standard for that pattern. */
@@ -82,6 +105,7 @@ const PATTERN_ANCHOR = { squat: ['squat', 0.55], hinge: ['deadlift', 0.5], push:
  * Prefers real population strength standards (see engine/strengthStandards.js) for
  * anchor lifts and their close pattern relatives; falls back to a bodyweight-relative
  * guess only for equipment/patterns the standards data can't inform (dumbbell isolation etc).
+ * `sex` is optional — when provided, pulls from the matching reference table.
  */
 function coldStartLoad(ex, profile, scheme, prs) {
   if (ex.equipment === 'Bodyweight') return 0;
@@ -97,7 +121,7 @@ function coldStartLoad(ex, profile, scheme, prs) {
   const bw = profile.weight || 70;
   const lift = STANDARD_LIFT[ex.name];
   if (lift) {
-    const std = standardFor(lift, bw, profile.experience);
+    const std = standardFor(lift, bw, profile.experience, profile.sex);
     if (std) {
       const repsMid = (scheme.repsMin + scheme.repsMax) / 2;
       const pct = Math.max(0.5, Math.min(0.95, 1 - (repsMid - 1) * 0.025));
@@ -107,7 +131,7 @@ function coldStartLoad(ex, profile, scheme, prs) {
   const anchor = PATTERN_ANCHOR[ex.pattern];
   if (anchor && ex.equipment !== 'Dumbbells') {
     const [anchorLift, frac] = anchor;
-    const std = standardFor(anchorLift, bw, profile.experience);
+    const std = standardFor(anchorLift, bw, profile.experience, profile.sex);
     if (std) return round2_5(std * frac * 0.6);
   }
   const expMult = { Beginner: 0.55, Intermediate: 0.8, Advanced: 1.05, Elite: 1.35 }[profile.experience] || 0.7;
@@ -117,21 +141,40 @@ function coldStartLoad(ex, profile, scheme, prs) {
   return round2_5(Math.max(2.5, base));
 }
 
+/** Session duration nudges exercise count up/down from the experience-level default. Purely a time-budget adjustment. */
+function exerciseCountFor(profile) {
+  const base = EXP_EXERCISE_COUNT[profile.experience] || 5;
+  const mins = Number(profile.sessionDuration) || 60;
+  let delta = 0;
+  if (mins <= 30) delta = -2;
+  else if (mins <= 45) delta = -1;
+  else if (mins >= 90) delta = 2;
+  else if (mins >= 75) delta = 1;
+  return Math.max(3, Math.min(9, base + delta));
+}
+
 /**
- * The engine: profile (goal/style/experience/equipment/weight) + a calendar day label
- * + workout history -> a fully populated workout. Load per exercise comes from
- * progressive overload (last logged performance) when history exists, otherwise a
- * standards-informed cold start.
+ * The engine: profile + a calendar day label + PRs + workout history -> a fully
+ * populated workout. Load per exercise comes from progressive overload (last logged
+ * performance) when history exists, otherwise a standards-informed cold start.
+ *
+ * Uses: goal (primary intensity scheme), secondaryGoal (blends into the last exercise
+ * so both goals get some representation), experience + equipment (exercise pool),
+ * sessionDuration (exercise count), limitations (exclusion filter), sex (opt-in,
+ * only affects load estimates via strength standards), cardioPreference (whether a
+ * conditioning finisher gets added). Age and training age are NOT used here — see
+ * engine/strengthStandards.js and README for why.
  */
 export function generateWorkout(profile, dayLabel, prs, workouts) {
   const scheme = GOAL_SCHEME[profile.goal] || DEFAULT_SCHEME;
+  const secondaryScheme = profile.secondaryGoal && profile.secondaryGoal !== profile.goal ? GOAL_SCHEME[profile.secondaryGoal] : null;
   const equipAllowed = EQUIPMENT_ACCESS[profile.equipment] || EQUIPMENT_ACCESS['Full gym'];
   const maxDiffIdx = Math.max(0, EXP_ORDER.indexOf(profile.experience));
   const allowedDiff = EXP_ORDER.slice(0, maxDiffIdx + 1);
   const muscles = DAY_MUSCLES[dayLabel];
   const patterns = DAY_PATTERNS[dayLabel];
 
-  let pool = EXERCISE_DB.filter(e => equipAllowed.includes(e.equipment) && allowedDiff.includes(e.difficulty));
+  let pool = EXERCISE_DB.filter(e => equipAllowed.includes(e.equipment) && allowedDiff.includes(e.difficulty) && !excludedByLimitations(e, profile.limitations));
   if (muscles) pool = pool.filter(e => muscles.includes(e.muscle));
   else if (patterns) pool = pool.filter(e => patterns.includes(e.pattern));
   else pool = pool.filter(e => ['squat', 'hinge', 'push', 'pull'].includes(e.pattern));
@@ -139,26 +182,31 @@ export function generateWorkout(profile, dayLabel, prs, workouts) {
   const order = { squat: 0, hinge: 1, push: 2, pull: 3, core: 4, carry: 5 };
   pool = [...pool].sort((a, b) => (order[a.pattern] ?? 9) - (order[b.pattern] ?? 9));
 
-  const count = EXP_EXERCISE_COUNT[profile.experience] || 5;
+  const count = exerciseCountFor(profile);
   let picked = pool.slice(0, count);
   if (picked.length < count) {
-    const extra = EXERCISE_DB.filter(e => equipAllowed.includes(e.equipment) && !picked.includes(e));
+    const extra = EXERCISE_DB.filter(e => equipAllowed.includes(e.equipment) && !excludedByLimitations(e, profile.limitations) && !picked.includes(e));
     picked = [...picked, ...extra.slice(0, count - picked.length)];
   }
 
-  const exercisesOut = picked.map(ex => {
-    const reps = Math.round((scheme.repsMin + scheme.repsMax) / 2);
-    const progression = progressiveLoad(ex, scheme, workouts);
-    const w = progression ? progression.weight : coldStartLoad(ex, profile, scheme, prs);
+  const exercisesOut = picked.map((ex, i) => {
+    // The last exercise of the session leans on the secondary goal's rep/effort scheme (if set),
+    // so a stated secondary goal actually shows up in the program rather than being decorative.
+    const useSecondary = secondaryScheme && i === picked.length - 1;
+    const activeScheme = useSecondary ? secondaryScheme : scheme;
+    const reps = Math.round((activeScheme.repsMin + activeScheme.repsMax) / 2);
+    const progression = progressiveLoad(ex, activeScheme, workouts);
+    const w = progression ? progression.weight : coldStartLoad(ex, profile, activeScheme, prs);
     return {
       name: ex.name,
-      progressNote: progression ? progression.note : null,
-      sets: Array.from({ length: scheme.sets }, () => ({ w, r: reps, rir: scheme.rir, done: false })),
+      progressNote: progression ? progression.note : (useSecondary ? `Secondary goal focus: ${profile.secondaryGoal}` : null),
+      sets: Array.from({ length: activeScheme.sets }, () => ({ w, r: reps, rir: activeScheme.rir, done: false })),
     };
   });
 
   const bc = bodyComposition(profile);
-  if (profile.goal === 'Fat Loss' && bc && bc.category === 'Higher') {
+  const wantsConditioning = profile.cardioPreference === 'High' || (profile.cardioPreference !== 'Low' && profile.goal === 'Fat Loss' && bc && bc.category === 'Higher');
+  if (wantsConditioning) {
     exercisesOut.push({ name: 'Conditioning Finisher — 10 min intervals', sets: [{ w: 0, r: 1, rir: scheme.rir, done: false }] });
   }
   return { name: dayLabel + ' — ' + scheme.label, exercises: exercisesOut, meta: scheme };

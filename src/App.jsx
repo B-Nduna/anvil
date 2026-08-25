@@ -21,7 +21,7 @@ const pageSubtitle = p => ({
   program: 'Build your weekly split, or apply a ready-made training system.',
   progress: 'Bodyweight, strength records and measurements over time.',
   library: 'Browse exercises to plan your next session.',
-  profile: 'Your details and how they shape your Training Identity.',
+  profile: 'Your details and how they shape your Athlete Profile and Training Emphasis.',
 }[p]);
 
 export default function App() {

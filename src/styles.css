@@ -63,6 +63,30 @@
 .choiceGrid.freq .choiceCard b{font:700 22px 'Barlow Condensed'}
 .onboardFoot{padding:20px 8vw 30px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line)}
 
+/* ---------- expanded onboarding: subgroups, chip toggles, textareas, summary ---------- */
+.onboardSubgroup{margin-top:22px}
+.onboardSubLabel{display:block;font-size:10px;letter-spacing:1.2px;color:#9aa1a6;text-transform:uppercase;font-weight:700;margin-bottom:8px}
+.onboardSubLabel em{color:#6c747a;font-style:normal;text-transform:none;letter-spacing:0;font-weight:500}
+.onboardHint{font-size:11px;color:#6c747a;margin:-2px 0 10px}
+.chipRow{display:flex;flex-wrap:wrap;gap:8px}
+.chipToggle{background:#101316;border:1px solid var(--line);color:#9aa1a6;border-radius:8px;padding:9px 14px;font-size:12px;font-weight:600}
+.chipToggle:hover{border-color:#444b51}
+.chipToggle.active{border-color:var(--accent);background:#1a160e;color:var(--accent2)}
+.onboardTextarea{width:100%;background:#0c0f11;border:1px solid #293035;border-radius:6px;padding:10px;color:#eee;outline:0;font:inherit;resize:vertical}
+.summaryGrid{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.summaryCol .onboardSubLabel{margin-bottom:12px}
+.summaryRow{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #1c2226;font-size:12px}
+.summaryRow span{color:#8a9298}
+.summaryRow b{color:#eee;font-weight:600;text-align:right}
+
+/* ---------- athlete profile fact block (Dashboard / Profile) ---------- */
+.factGrid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.factItem{padding:10px 0;border-bottom:1px solid #1c2226;display:flex;justify-content:space-between;align-items:baseline;padding-right:14px}
+.factItem span{font-size:9px;letter-spacing:1px;color:#737c83;font-weight:700}
+.factItem b{font-size:12px;color:#eee;font-weight:700}
+.factNote{font-size:11px;color:#6c747a;margin-top:10px;line-height:1.5}
+
+
 /* ---------- week strip ---------- */
 .weekStrip{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
 .weekDay{background:#0d1012;border:1px solid var(--line);border-radius:8px;padding:12px 6px;text-align:center;display:flex;flex-direction:column;gap:8px}
@@ -76,4 +100,4 @@
 
 @media(max-width:1000px){aside{width:75px;padding:20px 10px}.brand div,nav button span,.sideFoot{display:none}.brand{justify-content:center;padding-bottom:20px}.app main{margin-left:75px;width:calc(100% - 75px);padding:25px}.four{grid-template-columns:repeat(2,1fr)}.three{grid-template-columns:repeat(2,1fr)}.splitGrid{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:700px){aside{position:fixed;inset:auto 0 0;width:100%;height:64px;z-index:5;border-top:1px solid var(--line);border-right:0;padding:5px;background:#0b0d0f}.brand{display:none}nav{grid-template-columns:repeat(6,1fr);height:100%}nav button{justify-content:center;padding:6px}nav button.active{box-shadow:inset 0 -3px var(--accent)}main,.app main{margin:0;width:100%;padding:20px 14px 85px}header{margin-bottom:20px}h1{font-size:31px}.hero{align-items:flex-start;gap:15px;flex-direction:column}.four,.three,.two{grid-template-columns:1fr}.metric{padding:14px}.splitGrid{grid-template-columns:repeat(2,1fr)}.tableRow{grid-template-columns:35px 1fr 35px}.tableRow>span{display:none}.tableRow>button{grid-column:3}.formGrid,.prGrid{grid-template-columns:1fr}.modal{max-height:95vh}.modalHead{padding:16px}.exerciseList{padding:12px}.setHead,.setRow{grid-template-columns:30px 1fr 1fr 55px 25px}
-.authCard{padding:26px 20px}.onboardTop{padding:18px 5vw 0}.choiceGrid{grid-template-columns:repeat(2,1fr)}.choiceGrid.two{grid-template-columns:1fr}.choiceGrid.freq{grid-template-columns:repeat(3,1fr)}.step h2{font-size:24px}.onboardFoot{padding:16px 5vw 22px}.weekStrip{grid-template-columns:repeat(4,1fr)}.weekDay b{font-size:9px}}
+.authCard{padding:26px 20px}.onboardTop{padding:18px 5vw 0}.choiceGrid{grid-template-columns:repeat(2,1fr)}.choiceGrid.two{grid-template-columns:1fr}.choiceGrid.freq{grid-template-columns:repeat(3,1fr)}.step h2{font-size:24px}.onboardFoot{padding:16px 5vw 22px}.weekStrip{grid-template-columns:repeat(4,1fr)}.weekDay b{font-size:9px}.summaryGrid{grid-template-columns:1fr;gap:6px}.factGrid{grid-template-columns:1fr}}

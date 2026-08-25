@@ -1,6 +1,6 @@
 import React from 'react';
 import * as I from 'lucide-react';
-import { Card, Metric, Identity, WeekStrip } from '../ui/Shared';
+import { Card, Metric, Identity, WeekStrip, AthleteProfile } from '../ui/Shared';
 import { generateWorkout } from '../engine/workoutEngine';
 
 export default function Dashboard({ data, go, start, weeklyDone, freqTarget }) {
@@ -19,23 +19,27 @@ export default function Dashboard({ data, go, start, weeklyDone, freqTarget }) {
     <div className="grid four">
       <Metric label="BODYWEIGHT" value={(data.profile.weight || 0) + ' kg'} trend={data.measurements.length > 1 ? (data.profile.weight - data.measurements[1].weight <= 0 ? '↓ ' : '↑ ') + Math.abs(data.profile.weight - data.measurements[1]?.weight || 0).toFixed(1) + 'kg' : '—'} />
       <Metric label="WEEKLY GOAL" value={weeklyDone + '/' + (freqTarget || '—')} trend={freqTarget ? (weeklyDone >= freqTarget ? 'Goal met' : (freqTarget - weeklyDone) + ' to go') : 'Set in Profile'} />
-      <Metric label="HYPERTROPHY" value={(data.identity.hypertrophy || 0) + '%'} trend="Training identity" />
-      <Metric label="STRENGTH" value={(data.identity.strength || 0) + '%'} trend="Training identity" />
+      <Metric label="HYPERTROPHY" value={(data.identity.hypertrophy || 0) + '%'} trend="Training emphasis" />
+      <Metric label="STRENGTH" value={(data.identity.strength || 0) + '%'} trend="Training emphasis" />
     </div>
     <div className="grid two">
       <Card title="This week's calendar" action="Edit split" onAction={() => go('program')}><WeekStrip split={data.split} todayIdx={todayIdx} /></Card>
-      <Card title="Training identity" action="Edit" onAction={() => go('profile')}><Identity identity={data.identity} /></Card>
+      <Card title="Athlete profile" action="Edit" onAction={() => go('profile')}><AthleteProfile profile={data.profile} /></Card>
     </div>
     <div className="grid two">
+      <Card title="Training emphasis" action="Edit" onAction={() => go('profile')}><Identity identity={data.identity} /><p className="factNote">Describes emphasis in your program, not a fixed trait — recalculates as your goals and training change.</p></Card>
       <Card title="Recent sessions" action="View all" onAction={() => go('train')}>
         {data.workouts.length ? <div className="list">{data.workouts.slice(0, 3).map(x => <div className="row" key={x.id}><div><b>{x.name}</b><small>{x.date} · {x.duration} min</small></div><strong>{(x.volume || 0).toLocaleString()} kg</strong></div>)}</div> : <div className="emptyState small"><I.Dumbbell size={20} /><p>No sessions logged yet. Start today's workout to begin your history.</p></div>}
       </Card>
+    </div>
+    <div className="grid two">
       <Card title="Coach analysis">
         {data.workouts.length ? <>
-          <div className="insight"><I.Activity /><div><b>{weeklyDone >= (freqTarget || 99) ? 'Weekly goal met.' : 'Keep the momentum.'}</b><p>You've logged {weeklyDone} of {freqTarget} planned sessions this week. {weeklyDone >= (freqTarget || 99) ? 'Great consistency — recovery matters just as much as the work.' : 'Stay on schedule to keep your identity scores trending up.'}</p></div></div>
+          <div className="insight"><I.Activity /><div><b>{weeklyDone >= (freqTarget || 99) ? 'Weekly goal met.' : 'Keep the momentum.'}</b><p>You've logged {weeklyDone} of {freqTarget} planned sessions this week. {weeklyDone >= (freqTarget || 99) ? 'Great consistency — recovery matters just as much as the work.' : 'Stay on schedule to keep your training emphasis trending toward your goal.'}</p></div></div>
           <div className="insight"><I.Target /><div><b>Progressive overload is active</b><p>Each generated workout checks your last logged session for that exercise and adjusts the weight — hit your reps with room to spare and it'll add load next time.</p></div></div>
         </> : <div className="emptyState small"><I.Sparkles size={20} /><p>Your first few sessions will unlock personalized coaching insights here.</p></div>}
       </Card>
+      {data.profile.limitationNotes && <Card title="Noted limitations"><p className="factNote">{data.profile.limitationNotes}</p></Card>}
     </div>
   </section>;
 }

@@ -16,11 +16,16 @@ export const STYLE_POOL = {
   'Functional': ['Full body A', 'Conditioning', 'Full body B', 'Mobility'],
 };
 
-/** Builds a 7-day calendar from training frequency (rest-day pattern) and style (session labels). */
+/** Builds a 7-day calendar from training frequency (rest-day pattern) and style (session labels).
+ * If the athlete specified preferred training days (from Availability in onboarding) matching
+ * their frequency, those exact days are used instead of the default even spread. */
 export function buildCalendar(profile) {
   const freq = Math.max(2, Math.min(7, Number(profile.frequency) || 4));
-  const pattern = FREQ_PATTERN[freq] || FREQ_PATTERN[4];
   const pool = STYLE_POOL[profile.style] || STYLE_POOL['Hybrid'];
+  let pattern = FREQ_PATTERN[freq] || FREQ_PATTERN[4];
+  if (Array.isArray(profile.preferredDays) && profile.preferredDays.length === freq) {
+    pattern = DAYS.map(d => (profile.preferredDays.includes(d) ? 1 : 0));
+  }
   let p = 0;
   return DAYS.map((d, i) => {
     if (!pattern[i]) return [d, 'Rest'];

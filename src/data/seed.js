@@ -1,4 +1,29 @@
-export const emptyProfile = { name: '', goal: '', style: '', experience: '', frequency: 4, equipment: '', weight: 0, height: 0 };
+/*
+ * Athlete profile model. Every field here maps to a specific, honest use —
+ * see comments below and engine/workoutEngine.js. Chronological age and
+ * training age are collected and displayed (Athlete Profile block) but are
+ * deliberately NOT used to alter load/volume calculations: that would be
+ * pseudo-precision the app can't actually back up. Sex is opt-in and only
+ * ever changes which strength-standards reference table is shown.
+ */
+export const emptyProfile = {
+  // About You
+  name: '', age: '', sex: '', height: 0, weight: 0,
+  // Training History
+  trainingAge: '', experience: '', trainingNotes: '',
+  // Goals
+  goal: '', secondaryGoal: '', targetWeight: '', targetDate: '',
+  // Training Style
+  style: '',
+  // Availability
+  frequency: 4, preferredDays: [], sessionDuration: 60,
+  // Equipment
+  equipment: '',
+  // Limitations — entirely optional, user-controlled
+  limitations: [], limitationNotes: '',
+  // Optional extras
+  bodyFatPct: '', cardioPreference: '',
+};
 
 export const seed = {
   onboarded: false,
@@ -12,7 +37,16 @@ export const seed = {
 
 export const demo = {
   onboarded: true,
-  profile: { name: 'Athlete', goal: 'Build Muscle', style: 'Bodybuilding', experience: 'Intermediate', frequency: 5, equipment: 'Full gym', weight: 82.4, height: 178 },
+  profile: {
+    name: 'Athlete', age: 30, sex: 'Male', height: 178, weight: 82.4,
+    trainingAge: 4, experience: 'Advanced', trainingNotes: 'Been running a bodybuilding split for the last couple of years.',
+    goal: 'Build Muscle', secondaryGoal: 'Strength', targetWeight: '', targetDate: '',
+    style: 'Bodybuilding',
+    frequency: 5, preferredDays: [], sessionDuration: 60,
+    equipment: 'Full gym',
+    limitations: [], limitationNotes: '',
+    bodyFatPct: '', cardioPreference: 'Moderate',
+  },
   identity: { hypertrophy: 84, strength: 72, athletic: 38, conditioning: 44, mobility: 29 },
   workouts: [
     { id: 1, name: 'Push — Hypertrophy', date: 'Today', duration: 58, volume: 14240, exercises: [
@@ -31,7 +65,12 @@ export const demo = {
 };
 
 export function loadState() {
-  try { return JSON.parse(localStorage.getItem('anvil_state')) || seed; } catch { return seed; }
+  try {
+    const stored = JSON.parse(localStorage.getItem('anvil_state'));
+    if (!stored) return seed;
+    // Merge with emptyProfile so older saved profiles (pre-expansion) don't crash on missing fields.
+    return { ...stored, profile: { ...emptyProfile, ...stored.profile } };
+  } catch { return seed; }
 }
 export function saveState(data) {
   localStorage.setItem('anvil_state', JSON.stringify(data));

@@ -32,7 +32,7 @@ export default function Progress({ data, setData, notify }) {
     <Card title="Strength records">
       <div className="prGrid">{data.prs.map(([n, v]) => {
         const lift = PR_LIFT_KEY[n];
-        const level = lift && v > 0 && data.profile.weight ? classifyLift(lift, data.profile.weight, v) : null;
+        const level = lift && v > 0 && data.profile.weight ? classifyLift(lift, data.profile.weight, v, data.profile.sex) : null;
         return <div className="pr" key={n}><span>{n}</span><strong>{v} kg</strong><small>{level ? `${level} for your bodyweight` : 'Estimated 1RM'}</small></div>;
       })}</div>
     </Card>

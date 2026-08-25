@@ -13,6 +13,24 @@ export function Identity({ identity }) {
   return <div className="identity">{Object.entries(identity).map(([k, v]) => <div key={k}><div><span>{k}</span><b>{v}%</b></div><div className="bar"><i style={{ width: v + '%' }} /></div></div>)}</div>;
 }
 
+/** Plain factual athlete-profile block — deliberately separate from the Training Emphasis
+ * percentages below it, so the app never conflates "what you told us" with "a computed score". */
+export function AthleteProfile({ profile }) {
+  const rows = [
+    ['AGE', profile.age || '—'],
+    ['SEX', profile.sex || '—'],
+    ['HEIGHT', profile.height ? profile.height + ' CM' : '—'],
+    ['WEIGHT', profile.weight ? profile.weight + ' KG' : '—'],
+    ['TRAINING AGE', profile.trainingAge !== '' && profile.trainingAge != null ? profile.trainingAge + ' YEARS' : '—'],
+    ['EXPERIENCE', profile.experience || '—'],
+    ['PRIMARY GOAL', profile.goal || '—'],
+    ['SECONDARY GOAL', profile.secondaryGoal || 'None'],
+    ['FREQUENCY', profile.frequency ? profile.frequency + ' DAYS' : '—'],
+    ['EQUIPMENT', profile.equipment || '—'],
+  ];
+  return <div className="factGrid">{rows.map(([label, value]) => <div className="factItem" key={label}><span>{label}</span><b>{value}</b></div>)}</div>;
+}
+
 export function WeekStrip({ split, todayIdx }) {
   return <div className="weekStrip">{split.map(([d, type], i) => <div className={'weekDay ' + (i === todayIdx ? 'today' : '') + (type === 'Rest' ? ' rest' : '')} key={d}><span>{d}</span><b>{type}</b></div>)}</div>;
 }
