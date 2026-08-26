@@ -1,6 +1,7 @@
 import OPEN_EXERCISE_DATA from '../data/exerciseData.json'; /* free-exercise-db (public domain) — reshaped to our schema */
 import { standardFor } from './strengthStandards';
 import { progressiveLoad } from './progressiveOverload';
+import { trainingTier, TIER_DIFFICULTY, TIER_EXERCISE_COUNT, TIER_MAX_SETS, TIER_PROGRESSION_MULT, TIER_REST_MULT } from './trainingLevel';
 
 /* Curated anchor lifts — exact names so PR tracking (Bench/Squat/Deadlift) and the
    validated strength-standards table can key off them for load suggestions. */
@@ -58,8 +59,6 @@ export const GOAL_SCHEME = {
   'Mobility': { label: 'MOBILITY', sets: 3, repsMin: 10, repsMax: 15, rir: 3, restSec: 40 },
 };
 export const DEFAULT_SCHEME = { label: 'GENERAL FITNESS', sets: 3, repsMin: 8, repsMax: 12, rir: 2, restSec: 70 };
-const EXP_ORDER = ['Beginner', 'Intermediate', 'Advanced', 'Elite'];
-const EXP_EXERCISE_COUNT = { Beginner: 4, Intermediate: 5, Advanced: 6, Elite: 7 };
 const round2_5 = v => Math.round(v / 2.5) * 2.5;
 
 /** Body composition — informational BMI band only, never a somatotype/personality label. Nudges Fat Loss programming. */
@@ -141,9 +140,9 @@ function coldStartLoad(ex, profile, scheme, prs) {
   return round2_5(Math.max(2.5, base));
 }
 
-/** Session duration nudges exercise count up/down from the experience-level default. Purely a time-budget adjustment. */
-function exerciseCountFor(profile) {
-  const base = EXP_EXERCISE_COUNT[profile.experience] || 5;
+/** Session duration nudges exercise count up/down from the training-tier default. Purely a time-budget adjustment. */
+function exerciseCountFor(tier, profile) {
+  const base = TIER_EXERCISE_COUNT[tier] || 5;
   const mins = Number(profile.sessionDuration) || 60;
   let delta = 0;
   if (mins <= 30) delta = -2;
@@ -159,18 +158,30 @@ function exerciseCountFor(profile) {
  * performance) when history exists, otherwise a standards-informed cold start.
  *
  * Uses: goal (primary intensity scheme), secondaryGoal (blends into the last exercise
- * so both goals get some representation), experience + equipment (exercise pool),
- * sessionDuration (exercise count), limitations (exclusion filter), sex (opt-in,
- * only affects load estimates via strength standards), cardioPreference (whether a
- * conditioning finisher gets added). Age and training age are NOT used here — see
- * engine/strengthStandards.js and README for why.
+ * so both goals get some representation), equipment (exercise pool), sessionDuration
+ * (exercise count), limitations (exclusion filter), sex (opt-in, only affects load
+ * estimates via strength standards), cardioPreference (whether a conditioning finisher
+ * gets added).
+ *
+ * Training tier — see engine/trainingLevel.js — blends training age with self-reported
+ * experience and drives: exercise difficulty gating, base exercise count, the working-set
+ * cap per exercise, how aggressive progressive-overload jumps are, and prescribed rest
+ * time. Chronological age is intentionally NOT used for any of this — it stays contextual
+ * / display-only (see README, "On age, sex, and not overclaiming").
  */
 export function generateWorkout(profile, dayLabel, prs, workouts) {
-  const scheme = GOAL_SCHEME[profile.goal] || DEFAULT_SCHEME;
-  const secondaryScheme = profile.secondaryGoal && profile.secondaryGoal !== profile.goal ? GOAL_SCHEME[profile.secondaryGoal] : null;
+  const tier = trainingTier(profile);
+  const restMult = TIER_REST_MULT[tier] ?? 1;
+  const maxSets = TIER_MAX_SETS[tier] ?? 4;
+  const progressionMult = TIER_PROGRESSION_MULT[tier] ?? 1;
+
+  const baseScheme = GOAL_SCHEME[profile.goal] || DEFAULT_SCHEME;
+  const scheme = { ...baseScheme, sets: Math.min(baseScheme.sets, maxSets), restSec: Math.round(baseScheme.restSec * restMult) };
+  const baseSecondary = profile.secondaryGoal && profile.secondaryGoal !== profile.goal ? GOAL_SCHEME[profile.secondaryGoal] : null;
+  const secondaryScheme = baseSecondary ? { ...baseSecondary, sets: Math.min(baseSecondary.sets, maxSets), restSec: Math.round(baseSecondary.restSec * restMult) } : null;
+
   const equipAllowed = EQUIPMENT_ACCESS[profile.equipment] || EQUIPMENT_ACCESS['Full gym'];
-  const maxDiffIdx = Math.max(0, EXP_ORDER.indexOf(profile.experience));
-  const allowedDiff = EXP_ORDER.slice(0, maxDiffIdx + 1);
+  const allowedDiff = TIER_DIFFICULTY[tier] || TIER_DIFFICULTY.Established;
   const muscles = DAY_MUSCLES[dayLabel];
   const patterns = DAY_PATTERNS[dayLabel];
 
@@ -182,7 +193,7 @@ export function generateWorkout(profile, dayLabel, prs, workouts) {
   const order = { squat: 0, hinge: 1, push: 2, pull: 3, core: 4, carry: 5 };
   pool = [...pool].sort((a, b) => (order[a.pattern] ?? 9) - (order[b.pattern] ?? 9));
 
-  const count = exerciseCountFor(profile);
+  const count = exerciseCountFor(tier, profile);
   let picked = pool.slice(0, count);
   if (picked.length < count) {
     const extra = EXERCISE_DB.filter(e => equipAllowed.includes(e.equipment) && !excludedByLimitations(e, profile.limitations) && !picked.includes(e));
@@ -195,7 +206,7 @@ export function generateWorkout(profile, dayLabel, prs, workouts) {
     const useSecondary = secondaryScheme && i === picked.length - 1;
     const activeScheme = useSecondary ? secondaryScheme : scheme;
     const reps = Math.round((activeScheme.repsMin + activeScheme.repsMax) / 2);
-    const progression = progressiveLoad(ex, activeScheme, workouts);
+    const progression = progressiveLoad(ex, activeScheme, workouts, progressionMult);
     const w = progression ? progression.weight : coldStartLoad(ex, profile, activeScheme, prs);
     return {
       name: ex.name,
@@ -209,5 +220,5 @@ export function generateWorkout(profile, dayLabel, prs, workouts) {
   if (wantsConditioning) {
     exercisesOut.push({ name: 'Conditioning Finisher — 10 min intervals', sets: [{ w: 0, r: 1, rir: scheme.rir, done: false }] });
   }
-  return { name: dayLabel + ' — ' + scheme.label, exercises: exercisesOut, meta: scheme };
+  return { name: dayLabel + ' — ' + scheme.label, exercises: exercisesOut, meta: scheme, tier };
 }

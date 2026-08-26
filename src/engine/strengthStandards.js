@@ -11,11 +11,14 @@
  * strengthStandards.json).
  *
  * Reference sets: "M", "F", and "combined" (both pooled — the default when
- * the athlete hasn't specified a sex, or prefers not to). Sex meaningfully
- * changes these numbers (e.g. a 70-80kg intermediate squat is ~167kg on the
- * M table vs ~112kg on the F table) so the combined table is a deliberately
- * rough fallback, never presented as precise. This is entirely opt-in: sex
- * is only used here, for standards display, and nowhere else in the app.
+ * the athlete hasn't specified a sex, or prefers not to). Sex-specific
+ * strength standards are optional reference data — they do not determine
+ * your training program. They only change which percentile table is shown
+ * for load suggestions and PR classification; nothing else in the app reads
+ * this field. The combined table exists as a deliberately rough fallback
+ * (sex meaningfully changes these numbers — e.g. a 70-80kg intermediate
+ * squat is ~167kg on the M table vs ~112kg on the F table — so combined is
+ * never presented as precise).
  */
 import STANDARDS from '../data/strengthStandards.json';
 

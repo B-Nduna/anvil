@@ -7,7 +7,8 @@ const REST_DEFAULT = 90;
 export default function WorkoutModal({ workout, profile, prs, workouts, close, save }) {
   const [w, setW] = useState(() => JSON.parse(JSON.stringify(workout)));
   const [ex, setEx] = useState('');
-  const [restLeft, setRestLeft] = useState(REST_DEFAULT);
+  const restForScheme = wk => (wk.meta && wk.meta.restSec) || REST_DEFAULT;
+  const [restLeft, setRestLeft] = useState(() => restForScheme(workout));
   const [restRunning, setRestRunning] = useState(false);
   const [startedAt] = useState(() => Date.now());
 
@@ -22,7 +23,7 @@ export default function WorkoutModal({ workout, profile, prs, workouts, close, s
   const addEx = () => { if (ex.trim()) { setW(x => ({ ...x, exercises: [...x.exercises, { name: ex.trim(), sets: [{ w: 0, r: 0, rir: 2, done: false }] }] })); setEx(''); } };
   const update = (ei, si, k, v) => setW(x => ({ ...x, exercises: x.exercises.map((e, i) => i !== ei ? e : { ...e, sets: e.sets.map((s, j) => j !== si ? s : { ...s, [k]: Number(v) }) }) }));
   const addSet = ei => setW(x => ({ ...x, exercises: x.exercises.map((e, i) => i !== ei ? e : { ...e, sets: [...e.sets, { w: e.sets.at(-1)?.w || 0, r: 0, rir: 2, done: false }] }) }));
-  const toggleDone = (ei, si) => { setW(x => ({ ...x, exercises: x.exercises.map((e, i) => i !== ei ? e : { ...e, sets: e.sets.map((s, j) => j !== si ? s : { ...s, done: !s.done }) }) })); setRestLeft(REST_DEFAULT); setRestRunning(true); };
+  const toggleDone = (ei, si) => { setW(x => ({ ...x, exercises: x.exercises.map((e, i) => i !== ei ? e : { ...e, sets: e.sets.map((s, j) => j !== si ? s : { ...s, done: !s.done }) }) })); setRestLeft(restForScheme(w)); setRestRunning(true); };
   const removeExercise = ei => { if (confirm('Remove this exercise and its logged sets?')) setW(x => ({ ...x, exercises: x.exercises.filter((_, i) => i !== ei) })); };
 
   const totalSets = w.exercises.reduce((a, e) => a + e.sets.length, 0);
@@ -30,14 +31,14 @@ export default function WorkoutModal({ workout, profile, prs, workouts, close, s
   const pct = totalSets ? Math.round((doneSets / totalSets) * 100) : 0;
   const isFresh = w.id === 'new' && doneSets === 0;
   const dayLabel = (w.name || '').split(' — ')[0];
-  const regenerate = () => { if (!profile) return; const fresh = generateWorkout(profile, dayLabel, prs, workouts); setW(x => ({ ...x, ...fresh })); };
+  const regenerate = () => { if (!profile) return; const fresh = generateWorkout(profile, dayLabel, prs, workouts); setW(x => ({ ...x, ...fresh })); setRestLeft(restForScheme(fresh)); };
 
   return <div className="modalBg"><div className="modal">
     <div className="modalHead">
-      <div><span className="eyebrow">ACTIVE SESSION · {pct}% DONE{w.meta && <span className="schemeBadge">{w.meta.label} · {w.meta.sets}×{w.meta.repsMin}-{w.meta.repsMax} · RIR {w.meta.rir}</span>}</span><input className="modalTitleInput" value={w.name} onChange={e => setW(x => ({ ...x, name: e.target.value }))} placeholder="Name this workout…" /></div>
+      <div><span className="eyebrow">ACTIVE SESSION · {pct}% DONE{w.meta && <span className="schemeBadge">{w.meta.label} · {w.meta.sets}×{w.meta.repsMin}-{w.meta.repsMax} · RIR {w.meta.rir}{w.tier ? ` · ${w.tier} tier` : ''}</span>}</span><input className="modalTitleInput" value={w.name} onChange={e => setW(x => ({ ...x, name: e.target.value }))} placeholder="Name this workout…" /></div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>{isFresh && profile && <button className="iconBtn" onClick={regenerate} title="Regenerate exercise selection"><I.RefreshCw size={16} /></button>}<button className="iconBtn" onClick={close} title="Close without finishing"><I.X /></button></div>
     </div>
-    <div className="rest">REST <b style={{ color: restLeft <= 10 && restRunning ? '#ff6b6b' : undefined }}>{fmt(restLeft)}</b><span className="restHint">auto-starts when you check off a set</span><button onClick={() => setRestRunning(r => !r)}>{restRunning ? <><I.Pause size={15} /> Pause</> : <><I.Play size={15} /> Start</>}</button><button onClick={() => { setRestLeft(REST_DEFAULT); setRestRunning(false); }}><I.TimerReset size={15} /> Reset</button></div>
+    <div className="rest">REST <b style={{ color: restLeft <= 10 && restRunning ? '#ff6b6b' : undefined }}>{fmt(restLeft)}</b><span className="restHint">auto-starts when you check off a set</span><button onClick={() => setRestRunning(r => !r)}>{restRunning ? <><I.Pause size={15} /> Pause</> : <><I.Play size={15} /> Start</>}</button><button onClick={() => { setRestLeft(restForScheme(w)); setRestRunning(false); }}><I.TimerReset size={15} /> Reset</button></div>
     {!w.exercises.length && <div className="emptyState"><I.Dumbbell size={22} /><p>No exercises yet — add your first one below to start logging sets.</p></div>}
     <div className="exerciseList">{w.exercises.map((e, ei) => <div className="exercise" key={ei}>
       <div className="exHead"><div><b>{String(ei + 1).padStart(2, '0')} · {e.name}</b><small>{e.progressNote || 'Working sets'}</small></div><button onClick={() => removeExercise(ei)} title="Remove exercise"><I.Trash2 size={16} /></button></div>

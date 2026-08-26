@@ -92,7 +92,7 @@ export function Onboarding({ account, onDone }) {
         </div>
         <div className="onboardSubgroup">
           <span className="onboardSubLabel">Sex</span>
-          <p className="onboardHint">Only used to pick which strength-standards reference table to show on your PRs — nothing else changes based on this.</p>
+          <p className="onboardHint">Sex-specific strength standards are optional reference data. They do not determine your training program.</p>
           <div className="chipRow">{SEX_OPTIONS.map(s => <button key={s} className={'chipToggle ' + (p.sex === s ? 'active' : '')} onClick={() => set('sex', s)}>{s}</button>)}</div>
         </div>
       </Step>}

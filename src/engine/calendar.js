@@ -16,6 +16,19 @@ export const STYLE_POOL = {
   'Functional': ['Full body A', 'Conditioning', 'Full body B', 'Mobility'],
 };
 
+/** True if any input that shapes the weekly calendar changed between two profiles —
+ * used to decide whether saving a profile edit should rebuild the split automatically
+ * (see pages/Profile.jsx) without clobbering a split the athlete manually customized
+ * in Programs when nothing relevant actually changed. */
+export function calendarInputsChanged(oldProfile, newProfile) {
+  if (!oldProfile) return true;
+  if (oldProfile.frequency !== newProfile.frequency) return true;
+  if (oldProfile.style !== newProfile.style) return true;
+  const oldDays = JSON.stringify([...(oldProfile.preferredDays || [])].sort());
+  const newDays = JSON.stringify([...(newProfile.preferredDays || [])].sort());
+  return oldDays !== newDays;
+}
+
 /** Builds a 7-day calendar from training frequency (rest-day pattern) and style (session labels).
  * If the athlete specified preferred training days (from Availability in onboarding) matching
  * their frequency, those exact days are used instead of the default even spread. */

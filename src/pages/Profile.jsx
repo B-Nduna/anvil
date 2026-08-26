@@ -3,6 +3,7 @@ import * as I from 'lucide-react';
 import { Card, Identity, AthleteProfile } from '../ui/Shared';
 import { STYLES } from '../screens/Boot';
 import { recalcIdentity } from '../engine/identity';
+import { buildCalendar, calendarInputsChanged } from '../engine/calendar';
 import { LIMITATION_OPTIONS } from '../engine/workoutEngine';
 import { asset } from '../assetPath';
 
@@ -15,7 +16,22 @@ export default function Profile({ data, setData, notify }) {
   const [p, setP] = useState(data.profile);
   const set = (k, v) => setP(x => ({ ...x, [k]: v }));
   const toggleLimitation = l => setP(x => ({ ...x, limitations: x.limitations.includes(l) ? x.limitations.filter(y => y !== l) : [...x.limitations, l] }));
-  const save = () => { setData(d => ({ ...d, profile: { ...p } })); notify('Profile updated'); };
+  // Saving a profile edit recalculates everything derived from it automatically — no separate
+  // manual step needed for Training Emphasis (and the weekly calendar, if frequency/style/preferred
+  // days changed) to reflect the new answers. The Recalculate button below stays as a manual
+  // refresh — useful after logging new sessions without touching the profile itself.
+  const save = () => {
+    setData(d => {
+      const rebuildSplit = calendarInputsChanged(d.profile, p);
+      return {
+        ...d,
+        profile: { ...p },
+        identity: recalcIdentity(p, d.workouts),
+        split: rebuildSplit ? buildCalendar(p) : d.split,
+      };
+    });
+    notify('Profile saved — training emphasis recalculated');
+  };
   const recalc = () => { setData(d => ({ ...d, identity: recalcIdentity(p, d.workouts) })); notify('Training emphasis recalculated from your current profile'); };
 
   return <section className="page">
@@ -23,7 +39,7 @@ export default function Profile({ data, setData, notify }) {
 
     <div className="grid two">
       <Card title="Snapshot"><AthleteProfile profile={p} /></Card>
-      <Card title="Training emphasis"><Identity identity={data.identity} /><p className="factNote">Describes emphasis in your program, not a fixed trait.</p><button className="secondary full" onClick={recalc}>Recalculate</button></Card>
+      <Card title="Training emphasis"><Identity identity={data.identity} /><p className="factNote">Describes emphasis in your program, not a fixed trait. Recalculates automatically when you save profile changes below — use Recalculate to refresh it after logging new sessions without changing your profile.</p><button className="secondary full" onClick={recalc}>Recalculate</button></Card>
     </div>
 
     <div className="sectionTitle"><div><span className="eyebrow">EDIT</span><h2>About you</h2></div></div>
@@ -35,7 +51,7 @@ export default function Profile({ data, setData, notify }) {
         <label>Height (cm)<input type="number" value={p.height} onChange={e => set('height', Number(e.target.value) || 0)} /></label>
         <label>Body fat % <em style={{ opacity: 0.6 }}>(optional)</em><input type="number" value={p.bodyFatPct} onChange={e => set('bodyFatPct', e.target.value === '' ? '' : Number(e.target.value))} /></label>
       </div>
-      <div className="onboardSubgroup"><span className="onboardSubLabel">Sex</span><p className="onboardHint">Only changes which strength-standards reference table is shown on your PRs.</p>
+      <div className="onboardSubgroup"><span className="onboardSubLabel">Sex</span><p className="onboardHint">Sex-specific strength standards are optional reference data. They do not determine your training program.</p>
         <div className="chipRow">{SEX_OPTIONS.map(s => <button key={s} className={'chipToggle ' + (p.sex === s ? 'active' : '')} onClick={() => set('sex', s)}>{s}</button>)}</div>
       </div>
     </Card>

@@ -30,19 +30,33 @@ a validated strength-standards reference — all running client-side.
   the day; assigns sets/reps/RIR from a goal-specific intensity scheme;
   scales exercise count to your stated session length; blends a secondary
   goal into the session where it fits.
+- **Training level engine** (`src/engine/trainingLevel.js`) — training age
+  (years actually training) is reconciled with self-reported experience into
+  a 5-tier programming level that drives exercise-difficulty gating, base
+  exercise count, working-set caps, how aggressive progressive-overload jumps
+  are, and prescribed rest time. A 22-year-old with 6 years of training and a
+  35-year-old with 6 months don't get the same program, even if they both
+  self-report "Intermediate."
 - **Progressive overload** (`src/engine/progressiveOverload.js`) — every
   generated workout checks your last logged session for that exact exercise
   and adjusts the working weight up, down, or holds steady based on the
-  reps and RIR you actually logged.
+  reps and RIR you actually logged, scaled by training level (above).
 - **Validated, opt-in strength standards** (`src/engine/strengthStandards.js`)
   — cold-start load suggestions and PR classification are anchored to real
   percentile bands computed from the OpenPowerlifting dataset (2.27M
   competition entries), separately for male, female, and pooled reference
-  sets. Sex is entirely optional and only ever changes which table is shown.
+  sets. Sex-specific strength standards are optional reference data — they
+  do not determine your training program.
 - **629 exercises** merged from a hand-picked anchor set plus
   [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (public
   domain), tagged by muscle group, equipment, movement pattern, and
   difficulty.
+- **Profile changes propagate automatically.** Saving a profile edit
+  recalculates Training Emphasis immediately, and rebuilds the weekly
+  calendar if frequency, style, or preferred days changed — no separate
+  manual "recalculate" step required to see your program reflect what you
+  just told it. A manual Recalculate button remains, for refreshing after
+  new sessions without a profile change.
 
 ## On age, sex, and not overclaiming
 
@@ -52,19 +66,21 @@ one actually does:
 
 | Field | Used for |
 |---|---|
-| **Sex** | Opt-in only. Picks which strength-standards reference table (Male / Female / pooled) is used for load suggestions and PR classification. Nothing else. |
-| **Age** | Displayed on the Athlete Profile for context. **Not** used in any load, volume, or recovery calculation — a single age-based multiplier would be exactly the kind of pseudo-precision this app is trying to avoid. |
-| **Training age** | Displayed alongside chronological age, deliberately kept separate — a 35-year-old with 6 months of training and a 22-year-old with 6 years shouldn't be treated the same. Currently informational; **Experience level** (the self-assessed Beginner/Intermediate/Advanced/Elite field) is what actually drives exercise selection and difficulty gating today. |
-| **Session duration** | Scales the number of exercises per session (3 for a 30-min session up to 9 for 90+ min). |
+| **Sex** | Opt-in only. Sex-specific strength standards are optional reference data — they do not determine your training program. They only pick which reference table (Male / Female / pooled) is used for load suggestions and PR classification. Nothing else reads this field. |
+| **Age** | Displayed on the Athlete Profile for context. **Not** used in any load, volume, recovery, or programming calculation — a single age-based multiplier would be exactly the kind of pseudo-precision this app is trying to avoid. |
+| **Training age** | Distinct from chronological age, and it *does* drive programming — see **Training level** above. It's blended with self-reported experience (65% experience / 35% training age) into a 5-tier score that gates exercise difficulty, sets a base exercise count, caps working sets, scales progression aggressiveness, and adjusts prescribed rest time. "Current performance" (how recent sessions actually went) is deliberately not folded into this score — it's already reflected per-exercise via progressive overload, and mixing the two risked double-counting the same signal without enough history to do it responsibly. |
+| **Session duration** | Scales the number of exercises per session, on top of the training-level base count. |
 | **Limitations** | A small curated list (Knee, Shoulder, Lower back, Wrist, Hip, Elbow) mapped to a transparent keyword-exclusion filter — see `LIMITATION_EXCLUDE` in `workoutEngine.js`. This is a basic exercise filter, **not medical guidance**. Free-text notes are stored and shown during workouts but deliberately not auto-filtered, since arbitrary text can't be safely interpreted. |
 | **Secondary goal** | Blended into the last exercise of each generated session, using that goal's own set/rep/RIR scheme, so it's a visible part of the program rather than a decorative field. |
 
 The **Training Emphasis** percentages (Hypertrophy/Strength/Athletic/
 Conditioning/Mobility) describe emphasis in your current program — not a
-claim about your body or ability. They sit in their own card, separate
-from the factual **Athlete Profile** block (age, sex, height, weight,
-training age, experience, goals, frequency, equipment), so the app never
-conflates "what you told us" with "a computed score."
+claim about your body or ability, and deliberately not influenced by age,
+sex, height, or weight (identity.js uses experience, frequency, recent
+volume, and goal only). They sit in their own card, separate from the
+factual **Athlete Profile** block (age, sex, height, weight, training age,
+experience, goals, frequency, equipment), so the app never conflates "what
+you told us" with "a computed score."
 
 ## Stack
 
@@ -123,12 +139,15 @@ The `engine/` modules have no React dependency and can be tested standalone.
 ## Known limitations / roadmap
 
 - No backend yet — auth is local-only, data lives in the browser.
-- Training age and chronological age are collected and displayed but not
-  yet wired into the programming logic (see "On age, sex, and not
-  overclaiming" above) — a fatigue/recovery model that actually uses them
-  responsibly is a natural next step, not a quick multiplier.
 - No deload/fatigue-aware programming yet — the calendar doesn't adapt to
-  missed sessions.
+  missed sessions. Training level (see above) adjusts baseline volume and
+  progression pace, but doesn't yet react to a bad week in real time.
 - Limitation filtering is a basic keyword match against exercise names, not
   a clinical understanding of injuries — always a reason to consult a
   professional for injury-specific programming, not a replacement for one.
+- ANVIL is becoming a structured athlete data model with a training engine
+  on top, rather than just a fitness UI — the next priorities are making
+  Workout History/PRs the central data source everything else reads from,
+  a custom program builder, and richer per-exercise detail/history in the
+  Library (629 exercises is too large a database to leave as a plain
+  searchable catalogue).
