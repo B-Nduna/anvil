@@ -7,10 +7,16 @@ const REST_DEFAULT = 90;
 export default function WorkoutModal({ workout, profile, prs, workouts, close, save }) {
   const [w, setW] = useState(() => JSON.parse(JSON.stringify(workout)));
   const [ex, setEx] = useState('');
+  const [closing, setClosing] = useState(false);
   const restForScheme = wk => (wk.meta && wk.meta.restSec) || REST_DEFAULT;
   const [restLeft, setRestLeft] = useState(() => restForScheme(workout));
   const [restRunning, setRestRunning] = useState(false);
   const [startedAt] = useState(() => Date.now());
+
+  // Plays the modal's exit animation before actually unmounting (calling the real close prop).
+  const dismiss = after => { setClosing(true); setTimeout(after, 180); };
+  const handleCancel = () => dismiss(close);
+  const handleFinish = () => dismiss(() => save({ ...w, name: w.name.trim() || 'Untitled workout', duration: w.duration || Math.max(1, Math.round((Date.now() - startedAt) / 60000)), volume: w.exercises.reduce((a, e) => a + e.sets.reduce((s, x) => s + x.w * x.r, 0), 0) }));
 
   useEffect(() => {
     if (!restRunning) return;
@@ -33,10 +39,10 @@ export default function WorkoutModal({ workout, profile, prs, workouts, close, s
   const dayLabel = (w.name || '').split(' — ')[0];
   const regenerate = () => { if (!profile) return; const fresh = generateWorkout(profile, dayLabel, prs, workouts); setW(x => ({ ...x, ...fresh })); setRestLeft(restForScheme(fresh)); };
 
-  return <div className="modalBg"><div className="modal">
+  return <div className={'modalBg' + (closing ? ' closing' : '')}><div className="modal">
     <div className="modalHead">
       <div><span className="eyebrow">ACTIVE SESSION · {pct}% DONE{w.meta && <span className="schemeBadge">{w.meta.label} · {w.meta.sets}×{w.meta.repsMin}-{w.meta.repsMax} · RIR {w.meta.rir}{w.tier ? ` · ${w.tier} tier` : ''}</span>}</span><input className="modalTitleInput" value={w.name} onChange={e => setW(x => ({ ...x, name: e.target.value }))} placeholder="Name this workout…" /></div>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>{isFresh && profile && <button className="iconBtn" onClick={regenerate} title="Regenerate exercise selection"><I.RefreshCw size={16} /></button>}<button className="iconBtn" onClick={close} title="Close without finishing"><I.X /></button></div>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>{isFresh && profile && <button className="iconBtn" onClick={regenerate} title="Regenerate exercise selection"><I.RefreshCw size={16} /></button>}<button className="iconBtn" onClick={handleCancel} title="Close without finishing"><I.X /></button></div>
     </div>
     <div className="rest">REST <b style={{ color: restLeft <= 10 && restRunning ? '#ff6b6b' : undefined }}>{fmt(restLeft)}</b><span className="restHint">auto-starts when you check off a set</span><button onClick={() => setRestRunning(r => !r)}>{restRunning ? <><I.Pause size={15} /> Pause</> : <><I.Play size={15} /> Start</>}</button><button onClick={() => { setRestLeft(restForScheme(w)); setRestRunning(false); }}><I.TimerReset size={15} /> Reset</button></div>
     {!w.exercises.length && <div className="emptyState"><I.Dumbbell size={22} /><p>No exercises yet — add your first one below to start logging sets.</p></div>}
@@ -55,6 +61,6 @@ export default function WorkoutModal({ workout, profile, prs, workouts, close, s
     </div>)}
     <div className="addExercise"><input placeholder="Add exercise…" value={ex} onChange={e => setEx(e.target.value)} onKeyDown={e => e.key === 'Enter' && addEx()} /><button className="secondary" onClick={addEx}><I.Plus size={16} /> Add</button></div>
     </div>
-    <div className="modalFoot"><button className="secondary" onClick={close}>Cancel</button><button className="primary" onClick={() => save({ ...w, name: w.name.trim() || 'Untitled workout', duration: w.duration || Math.max(1, Math.round((Date.now() - startedAt) / 60000)), volume: w.exercises.reduce((a, e) => a + e.sets.reduce((s, x) => s + x.w * x.r, 0), 0) })}><I.Check size={17} /> Finish workout</button></div>
+    <div className="modalFoot"><button className="secondary" onClick={handleCancel}>Cancel</button><button className="primary" onClick={handleFinish}><I.Check size={17} /> Finish workout</button></div>
   </div></div>;
 }

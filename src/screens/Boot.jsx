@@ -37,6 +37,7 @@ const DURATIONS = [30, 45, 60, 75, 90];
 
 export function Onboarding({ account, onDone }) {
   const [step, setStep] = useState(0);
+  const [direction, setDirection] = useState('next');
   const [p, setP] = useState({
     name: account?.name || '', age: '', sex: '', height: '', weight: '',
     trainingAge: '', experience: '', trainingNotes: '',
@@ -50,8 +51,8 @@ export function Onboarding({ account, onDone }) {
   const steps = ['about', 'history', 'goals', 'style', 'availability', 'equipment', 'limitations', 'summary'];
   const total = steps.length - 1; // progress bar fills across the input steps; summary is the payoff, not counted toward the bar
   const pct = Math.round((Math.min(step, total) / total) * 100);
-  const next = () => setStep(s => Math.min(steps.length - 1, s + 1));
-  const back = () => setStep(s => Math.max(0, s - 1));
+  const next = () => { setDirection('next'); setStep(s => Math.min(steps.length - 1, s + 1)); };
+  const back = () => { setDirection('back'); setStep(s => Math.max(0, s - 1)); };
   const set = (k, v) => setP(x => ({ ...x, [k]: v }));
   const toggleDay = d => setP(x => ({ ...x, preferredDays: x.preferredDays.includes(d) ? x.preferredDays.filter(y => y !== d) : [...x.preferredDays, d] }));
   const toggleLimitation = l => setP(x => ({ ...x, limitations: x.limitations.includes(l) ? x.limitations.filter(y => y !== l) : [...x.limitations, l] }));
@@ -66,7 +67,7 @@ export function Onboarding({ account, onDone }) {
     if (k === 'equipment') return !!p.equipment;
     return true; // limitations + summary are always passable
   };
-  const selectAndAdvance = (k, v) => { set(k, v); setTimeout(() => setStep(s => Math.min(steps.length - 1, s + 1)), 160); };
+  const selectAndAdvance = (k, v) => { set(k, v); setDirection('next'); setTimeout(() => setStep(s => Math.min(steps.length - 1, s + 1)), 160); };
   const finish = () => onDone({
     ...p,
     age: Number(p.age), weight: Number(p.weight), height: Number(p.height),
@@ -83,7 +84,7 @@ export function Onboarding({ account, onDone }) {
       <div className="onboardPct">{k === 'summary' ? '100%' : pct + '%'}</div>
     </div>
     <div className="onboardBody">
-      {k === 'about' && <Step title="About you" sub="The basics — used to size load estimates and, if you choose, show sex-specific strength standards.">
+      {k === 'about' && <Step key={step} dir={direction} title="About you" sub="The basics — used to size load estimates and, if you choose, show sex-specific strength standards.">
         <div className="formGrid">
           <label>Name<input value={p.name} onChange={e => set('name', e.target.value)} placeholder="Your name" autoFocus /></label>
           <label>Age<input type="number" value={p.age} onChange={e => set('age', e.target.value)} placeholder="30" /></label>
@@ -97,7 +98,7 @@ export function Onboarding({ account, onDone }) {
         </div>
       </Step>}
 
-      {k === 'history' && <Step title="Training history" sub="Training age and chronological age aren't the same thing — both are shown on your profile, but experience is what actually shapes your program.">
+      {k === 'history' && <Step key={step} dir={direction} title="Training history" sub="Training age and chronological age aren't the same thing — both are shown on your profile, but experience is what actually shapes your program.">
         <div className="formGrid">
           <label>Training age (years)<input type="number" min="0" step="0.5" value={p.trainingAge} onChange={e => set('trainingAge', e.target.value)} placeholder="e.g. 2" /></label>
         </div>
@@ -109,7 +110,7 @@ export function Onboarding({ account, onDone }) {
         </div>
       </Step>}
 
-      {k === 'goals' && <Step title="What are you training for?" sub="Pick a primary focus — a secondary goal is optional and gets folded into your sessions where it fits.">
+      {k === 'goals' && <Step key={step} dir={direction} title="What are you training for?" sub="Pick a primary focus — a secondary goal is optional and gets folded into your sessions where it fits.">
         <span className="onboardSubLabel">Primary goal</span>
         <div className="choiceGrid">{GOALS.map(([g, Icon, d]) => <button key={g} className={'choiceCard ' + (p.goal === g ? 'active' : '')} onClick={() => set('goal', g)}><Icon size={22} /><b>{g}</b><small>{d}</small></button>)}</div>
         <div className="onboardSubgroup"><span className="onboardSubLabel">Secondary goal <em>(optional)</em></span>
@@ -123,11 +124,11 @@ export function Onboarding({ account, onDone }) {
         </div>
       </Step>}
 
-      {k === 'style' && <Step title="What's your training style?" sub="Pick the discipline your program should be built around.">
+      {k === 'style' && <Step key={step} dir={direction} title="What's your training style?" sub="Pick the discipline your program should be built around.">
         <div className="choiceGrid two">{STYLES.map(([s, d]) => <button key={s} className={'choiceCard ' + (p.style === s ? 'active' : '')} onClick={() => selectAndAdvance('style', s)}><b>{s}</b><small>{d}</small></button>)}</div>
       </Step>}
 
-      {k === 'availability' && <Step title="How much time can you give this?" sub="Your weekly calendar and exercise count per session are built around this.">
+      {k === 'availability' && <Step key={step} dir={direction} title="How much time can you give this?" sub="Your weekly calendar and exercise count per session are built around this.">
         <span className="onboardSubLabel">Days per week</span>
         <div className="choiceGrid freq">{[2, 3, 4, 5, 6, 7].map(n => <button key={n} className={'choiceCard ' + (p.frequency === n ? 'active' : '')} onClick={() => set('frequency', n)}><b>{n}</b><small>days / week</small></button>)}</div>
         <div className="onboardSubgroup"><span className="onboardSubLabel">Preferred days <em>(optional — leave blank for automatic spacing)</em></span>
@@ -139,11 +140,11 @@ export function Onboarding({ account, onDone }) {
         </div>
       </Step>}
 
-      {k === 'equipment' && <Step title="What do you have access to?" sub="Every exercise ANVIL suggests will be filtered to what you actually have.">
+      {k === 'equipment' && <Step key={step} dir={direction} title="What do you have access to?" sub="Every exercise ANVIL suggests will be filtered to what you actually have.">
         <div className="choiceGrid">{EQUIPMENT.map(([e, Icon]) => <button key={e} className={'choiceCard ' + (p.equipment === e ? 'active' : '')} onClick={() => selectAndAdvance('equipment', e)}><Icon size={22} /><b>{e}</b></button>)}</div>
       </Step>}
 
-      {k === 'limitations' && <Step title="Anything ANVIL should work around?" sub="Completely optional. This is a simple exercise filter, not medical guidance — always check with a professional for injury-specific programming.">
+      {k === 'limitations' && <Step key={step} dir={direction} title="Anything ANVIL should work around?" sub="Completely optional. This is a simple exercise filter, not medical guidance — always check with a professional for injury-specific programming.">
         <div className="choiceGrid freq">
           <button className={'choiceCard ' + (!p.limitations.length ? 'active' : '')} onClick={() => set('limitations', [])}><I.Check size={20} /><b>None</b></button>
           {LIMITATION_OPTIONS.map(l => <button key={l} className={'choiceCard ' + (p.limitations.includes(l) ? 'active' : '')} onClick={() => toggleLimitation(l)}><b>{l}</b></button>)}
@@ -153,7 +154,7 @@ export function Onboarding({ account, onDone }) {
         </div>
       </Step>}
 
-      {k === 'summary' && <Step title="Your ANVIL profile" sub="Review before we build your program — you can change any of this later in Profile.">
+      {k === 'summary' && <Step key={step} dir={direction} title="Your ANVIL profile" sub="Review before we build your program — you can change any of this later in Profile.">
         <div className="summaryGrid">
           <div className="summaryCol"><span className="onboardSubLabel">Athlete</span>
             <SummaryRow label="Age" value={p.age || '—'} /><SummaryRow label="Sex" value={p.sex || '—'} /><SummaryRow label="Height" value={(p.height || '—') + ' cm'} /><SummaryRow label="Weight" value={(p.weight || '—') + ' kg'} />

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as I from 'lucide-react';
-import { Card, Metric, Chart } from '../ui/Shared';
+import { Card, Metric, Chart, AnimatedValue } from '../ui/Shared';
 import { classifyLift } from '../engine/strengthStandards';
 
 const PR_LIFT_KEY = { 'Bench Press': 'bench', 'Squat': 'squat', 'Deadlift': 'deadlift' };
@@ -33,7 +33,7 @@ export default function Progress({ data, setData, notify }) {
       <div className="prGrid">{data.prs.map(([n, v]) => {
         const lift = PR_LIFT_KEY[n];
         const level = lift && v > 0 && data.profile.weight ? classifyLift(lift, data.profile.weight, v, data.profile.sex) : null;
-        return <div className="pr" key={n}><span>{n}</span><strong>{v} kg</strong><small>{level ? `${level} for your bodyweight` : 'Estimated 1RM'}</small></div>;
+        return <div className="pr" key={n}><span>{n}</span><strong><AnimatedValue value={v + ' kg'} /></strong><small>{level ? `${level} for your bodyweight` : 'Estimated 1RM'}</small></div>;
       })}</div>
     </Card>
   </section>;

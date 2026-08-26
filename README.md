@@ -85,7 +85,11 @@ you told us" with "a computed score."
 ## Stack
 
 React 18 + Vite, no backend (state persists to `localStorage` for now — a
-real backend is the next step). Icons via `lucide-react`.
+real backend is the next step). Icons via `lucide-react`. Animations are
+plain CSS (transitions/keyframes, no animation library) — page transitions,
+modal/toast enter-exit, direction-aware onboarding step slides, and
+animated count-up numbers on metrics and PRs. Respects
+`prefers-reduced-motion`.
 
 ## Running locally
 
@@ -137,6 +141,14 @@ The `engine/` modules have no React dependency and can be tested standalone.
   comments in `strengthStandards.js` for full methodology.
 
 ## Known limitations / roadmap
+
+- Any new CSS animation that ends on a non-`none` `transform` should use
+  `fill-mode: backwards`, not `both` — `both` was tried for the page-entry
+  stagger animation and caused a real bug: it left a permanent identity
+  transform on every animated element, which creates a new CSS stacking
+  context and silently traps `z-index`ed children (this broke the Train
+  page's dropdown picker, caught via a Playwright smoke test, fixed in
+  `styles.css`). See the comment above `.page{animation:...}`.
 
 - No backend yet — auth is local-only, data lives in the browser.
 - No deload/fatigue-aware programming yet — the calendar doesn't adapt to
