@@ -21,7 +21,7 @@ const INCREMENT = {
 };
 
 /** Pull the most recent logged instance of this exercise out of workout history. */
-function findLastPerformance(exerciseName, workouts) {
+export function findLastPerformance(exerciseName, workouts) {
   for (const w of workouts || []) {
     const match = (w.exercises || []).find(e => e.name === exerciseName);
     if (match && match.sets && match.sets.some(s => s.r > 0)) {

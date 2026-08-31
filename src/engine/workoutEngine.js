@@ -94,9 +94,25 @@ function excludedByLimitations(ex, limitations) {
   return limitations.some(l => (LIMITATION_EXCLUDE[l] || []).some(kw => name.includes(kw)));
 }
 
-const PR_MAP = { 'Back Squat': 'Squat', 'Deadlift': 'Deadlift', 'Barbell Bench Press': 'Bench Press' };
+export const PR_MAP = { 'Back Squat': 'Squat', 'Deadlift': 'Deadlift', 'Barbell Bench Press': 'Bench Press' };
 const STANDARD_LIFT = { 'Back Squat': 'squat', 'Deadlift': 'deadlift', 'Barbell Bench Press': 'bench' };
-/* Accessory-lift estimate, expressed as a fraction of the nearest anchor-lift standard for that pattern. */
+
+/** Compares a finished workout's top sets against current PRs. Returns { updatedPrs, newPRs } —
+ * newPRs is the list of [liftName, newValue, previousValue] beaten this session, for display;
+ * updatedPrs is the full PR list with any beaten records replaced (data.prs is the single source
+ * of truth for PRs — this is the only place that's allowed to change it). */
+export function detectPRs(workout, currentPrs) {
+  const newPRs = [];
+  const updatedPrs = currentPrs.map(([name, value]) => {
+    const exName = Object.keys(PR_MAP).find(k => PR_MAP[k] === name);
+    const ex = exName && workout.exercises.find(e => e.name === exName);
+    if (!ex) return [name, value];
+    const topSet = Math.max(0, ...ex.sets.filter(s => s.w > 0).map(s => s.w));
+    if (topSet > value) { newPRs.push([name, topSet, value]); return [name, topSet]; }
+    return [name, value];
+  });
+  return { updatedPrs, newPRs };
+}/* Accessory-lift estimate, expressed as a fraction of the nearest anchor-lift standard for that pattern. */
 const PATTERN_ANCHOR = { squat: ['squat', 0.55], hinge: ['deadlift', 0.5], push: ['bench', 0.55], pull: ['squat', 0.45], core: ['bench', 0.3], carry: ['deadlift', 0.35] };
 
 /**

@@ -58,6 +58,35 @@ a validated strength-standards reference — all running client-side.
   just told it. A manual Recalculate button remains, for refreshing after
   new sessions without a profile change.
 
+## Highlights
+
+- **Today, not a dashboard.** The home screen (`pages/Today.jsx`) leads with
+  one question — what to train right now — instead of a grid of metrics.
+  One dominant session card, a plain weekly list, two honest numbers
+  (streak, sessions this week). No percentage bars, no fabricated
+  per-day completion checkmarks (the data model can't back that up yet —
+  see Known limitations).
+- **Focused workout mode.** Starting a session now shows one exercise, one
+  set, at a time — large touch targets, last-session and target reference
+  lines, a "Set complete" action that flows straight into an integrated
+  rest timer (+30 / Skip / Reset) and auto-advances. The old full-list view
+  is still there as an explicit "Edit workout" mode for adding/removing
+  exercises or reviewing a past session, but it's no longer the default.
+- **Real post-workout summary.** Finishing a session shows duration, sets,
+  volume, and any PRs actually beaten this session — computed by comparing
+  logged sets against your stored records (`engine/workoutEngine.js:detectPRs`),
+  not decorative.
+- **PRs now actually update.** They used to be static seed values a workout
+  could never change. Finishing a session that beats a tracked lift (Bench/
+  Squat/Deadlift) now updates `data.prs` for real, and it's the only code
+  path allowed to do so — closing a real data-integrity gap (workout
+  completed → history updates → PRs update → progress reflects it).
+- **Workout dates are real timestamps now**, not static strings frozen at
+  save time. A session logged "Today" used to display as "Today" forever,
+  even after a week had passed — `engine/workoutDates.js` computes the
+  display label, weekly count, and streak from an actual `loggedAt`
+  timestamp instead.
+
 ## On age, sex, and not overclaiming
 
 Every field in onboarding maps to a specific, named use — nothing is
@@ -142,6 +171,20 @@ The `engine/` modules have no React dependency and can be tested standalone.
 
 ## Known limitations / roadmap
 
+- **This UI-polish pass is deliberately partial.** It covered: the Today
+  home experience, focused single-exercise workout mode with integrated
+  rest timer, post-workout completion screen with real PR detection, and
+  the workout-date/streak data-integrity fix. It did **not** yet cover:
+  per-day completion tracking on the week list (the `split` array is a
+  repeating weekly template, not dated instances of *this* week, so a real
+  checkmark needs a small data-model change — better to leave it blank than
+  fake it), the exercise-detail/history view (tapping an exercise in
+  Library to see your best/last/est. 1RM for it), the muscle-group
+  training-load overview, simplified body-tracking presentation, a full
+  design-token audit, or an accessibility pass (focus states, ARIA labels,
+  keyboard nav through focus mode). Flagging these explicitly rather than
+  claiming a 37-point brief is fully done in one pass.
+
 - Any new CSS animation that ends on a non-`none` `transform` should use
   `fill-mode: backwards`, not `both` — `both` was tried for the page-entry
   stagger animation and caused a real bug: it left a permanent identity
@@ -158,8 +201,7 @@ The `engine/` modules have no React dependency and can be tested standalone.
   a clinical understanding of injuries — always a reason to consult a
   professional for injury-specific programming, not a replacement for one.
 - ANVIL is becoming a structured athlete data model with a training engine
-  on top, rather than just a fitness UI — the next priorities are making
-  Workout History/PRs the central data source everything else reads from,
-  a custom program builder, and richer per-exercise detail/history in the
+  on top, rather than just a fitness UI — the next priorities are a custom
+  program builder and richer per-exercise detail/history in the
   Library (629 exercises is too large a database to leave as a plain
   searchable catalogue).

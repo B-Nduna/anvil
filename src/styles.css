@@ -194,3 +194,82 @@ nav button.active{animation:navActivate .3s var(--ease)}
 /* Week strip today highlight settle */
 .weekDay.today{animation:todayPulse 1.8s var(--ease) 1}
 @keyframes todayPulse{0%{box-shadow:0 0 0 0 #e5a94a55}70%{box-shadow:0 0 0 8px #e5a94a00}100%{box-shadow:0 0 0 0 #e5a94a00}}
+
+/* ================= TODAY PAGE ================= */
+.todayHead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:22px}
+.todayGreeting{font:600 15px Inter;color:#c7cbce}
+.todayProgram{font-size:9px;letter-spacing:1.4px;color:#6c747a;font-weight:700}
+
+.heroSession,.heroRest{border:1px solid #30363b;background:linear-gradient(150deg,#171b1e,#0d0f11);border-radius:14px;padding:34px 30px;margin-bottom:26px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px}
+.heroSession .tag,.heroRest .tag{font-size:10px;letter-spacing:2px;color:var(--accent);font-weight:800}
+.heroSession h1,.heroRest h1{font:800 44px 'Barlow Condensed';letter-spacing:1px;margin:0}
+.heroRest p{color:var(--muted);font-size:13px;max-width:340px;margin:-8px 0 4px}
+.heroStats{display:flex;gap:34px;margin:2px 0 6px}
+.heroStats div{display:flex;flex-direction:column;align-items:center;gap:4px}
+.heroStats b{font:800 24px 'Barlow Condensed'}
+.heroStats span{font-size:8.5px;letter-spacing:1.2px;color:#727a80;font-weight:700}
+.heroCta{padding:16px 40px;font-size:14px;letter-spacing:.5px;border-radius:10px}
+
+.weekList{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:22px}
+.weekRow{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid #1a1e22;font-size:12px}
+.weekRow:last-child{border-bottom:0}
+.weekRowDay{font-size:9px;letter-spacing:1.2px;color:#727a80;font-weight:700}
+.weekRowType{color:#c7cbce;font-weight:600}
+.weekRow.isToday{background:#171310}
+.weekRow.isToday .weekRowType{color:var(--accent2)}
+.weekRowStatus{font-size:9px;letter-spacing:1.2px;color:var(--accent);font-weight:800}
+
+.todayStats{display:flex;gap:40px;padding:4px 4px 22px}
+.todayStats div{display:flex;flex-direction:column;gap:3px}
+.todayStats b{font:800 26px 'Barlow Condensed'}
+.todayStats span{font-size:9px;letter-spacing:1.1px;color:#727a80;font-weight:700}
+
+.recentLink{background:none;color:#7d858c;font-size:11.5px;display:flex;align-items:center;gap:5px;padding:6px 4px}
+.recentLink:hover{color:#c7cbce}
+
+.streakSub{display:block;margin-top:6px;color:#666e74;font-size:9.5px}
+
+@media(max-width:700px){.heroSession h1,.heroRest h1{font-size:34px}.heroStats{gap:22px}.todayStats{gap:26px}}
+
+/* ================= FOCUSED WORKOUT MODE ================= */
+.focusModal{display:flex;flex-direction:column;max-height:92vh}
+.focusHead{display:flex;justify-content:space-between;align-items:center;padding:20px 22px;border-bottom:1px solid var(--line)}
+.focusHead .eyebrow{display:block}
+.focusCount{font:800 20px 'Barlow Condensed';color:var(--accent);letter-spacing:1px}
+.focusBody{flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;padding:34px 26px;gap:18px;overflow:auto}
+.focusExName{font:800 32px 'Barlow Condensed';text-transform:uppercase;letter-spacing:.5px;margin:0}
+.focusSetLabel{font-size:10px;letter-spacing:1.6px;color:var(--accent);font-weight:800;margin-top:-10px}
+.focusInputs{display:flex;gap:14px;margin-top:6px}
+.focusInputs label{display:flex;flex-direction:column;gap:8px;font-size:9px;letter-spacing:1.2px;color:#7d858c;font-weight:700}
+.focusInputs input,.focusInputs select{width:96px;background:#0c0f11;border:1px solid #293035;border-radius:10px;padding:16px 8px;color:#f4f5f5;font:700 24px 'Barlow Condensed';text-align:center;outline:0}
+.focusRefRow{display:flex;gap:36px;padding-top:4px}
+.focusRefRow div{display:flex;flex-direction:column;gap:4px}
+.focusRefRow span{font-size:8.5px;letter-spacing:1.2px;color:#727a80;font-weight:700}
+.focusRefRow b{font-size:13px;color:#c7cbce;font-weight:700}
+.focusComplete{width:min(320px,100%);margin-top:8px;padding:17px}
+.focusFoot{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-top:1px solid var(--line)}
+.ghostNav{background:none;color:#8a9298;font-size:12px;display:flex;align-items:center;gap:4px;padding:8px 10px}
+.ghostNav:hover:not(:disabled){color:#eee}
+.ghostNav:disabled{opacity:.35}
+
+.restFocus{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:30px}
+.restFocus .tag{font-size:11px;letter-spacing:2px;color:var(--accent);font-weight:800}
+.restClock{font:800 64px 'Barlow Condensed';letter-spacing:2px}
+.restControls{display:flex;gap:10px}
+.restControls button{padding:12px 22px;border-radius:9px}
+
+.modal.complete{max-width:460px}
+.completeBody{padding:44px 30px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:18px}
+.completeBody .tag{font-size:10px;letter-spacing:2px;color:var(--accent);font-weight:800}
+.completeBody h1{font:800 34px 'Barlow Condensed';margin:0}
+.completeStats{display:flex;gap:30px;margin:4px 0}
+.completeStats div{display:flex;flex-direction:column;align-items:center;gap:4px}
+.completeStats b{font:800 24px 'Barlow Condensed'}
+.completeStats span{font-size:8.5px;letter-spacing:1.1px;color:#727a80;font-weight:700}
+.prBanner{width:100%;border:1px solid #4a3a1e;background:#1c1608;border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.prBanner .tag{color:var(--accent2)}
+.prBannerRow{display:flex;justify-content:space-between;font-size:12px}
+.prBannerRow b{color:#eee}
+.prBannerRow span{color:var(--accent2);font-weight:700}
+
+@media(max-width:700px){.focusExName{font-size:26px}.focusInputs input,.focusInputs select{width:78px;padding:13px 6px;font-size:20px}.restClock{font-size:48px}}
