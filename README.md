@@ -57,8 +57,14 @@ a validated strength-standards reference — all running client-side.
   manual "recalculate" step required to see your program reflect what you
   just told it. A manual Recalculate button remains, for refreshing after
   new sessions without a profile change.
-
-## Highlights
+- **Exercise performance intelligence** (`src/engine/exerciseHistory.js`)
+  — every exercise you've logged has a real history: weight/rep/volume/
+  est.-1RM PRs, a trend read (improving/declining/stable, based on the
+  last few sessions' estimated 1RM), and session-over-session comparison.
+  Tap any exercise in Library to see it — an exercise with no logged
+  history shows an honest empty state, never a fabricated chart. The same
+  engine powers the "Last session → Today, +delta" line shown while
+  training.
 
 - **Today, not a dashboard.** The home screen (`pages/Today.jsx`) leads with
   one question — what to train right now — instead of a grid of metrics.
@@ -170,6 +176,20 @@ The `engine/` modules have no React dependency and can be tested standalone.
   comments in `strengthStandards.js` for full methodology.
 
 ## Known limitations / roadmap
+
+- **Training-OS roadmap.** The product direction is an explicitly phased
+  progression: Phase 1 (exercise history/performance intelligence) is
+  implemented — see `engine/exerciseHistory.js` and the Library detail
+  view. Deliberately **not yet built**: Phase 2 (post-workout subjective
+  feedback — session RPE, energy, soreness), Phase 3 (a readiness/fatigue
+  model built on Phase 2's data — nothing to build it on yet, correctly),
+  Phase 4 (adaptive programming that adjusts future sessions based on
+  logged trends, beyond the existing per-exercise progressive overload),
+  and Phase 6's expanded athlete-identity profile (session count, PR count,
+  streak framing on the Profile page itself). Each is a real dependency
+  chain, not an arbitrary ordering — a readiness model has nothing honest
+  to compute without feedback data first, so it isn't stubbed out with a
+  fake number in the meantime.
 
 - **This UI-polish pass is deliberately partial.** It covered: the Today
   home experience, focused single-exercise workout mode with integrated

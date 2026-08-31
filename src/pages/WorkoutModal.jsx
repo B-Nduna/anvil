@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import * as I from 'lucide-react';
 import { generateWorkout } from '../engine/workoutEngine';
 import { findLastPerformance } from '../engine/progressiveOverload';
+import { sessionDelta } from '../engine/exerciseHistory';
 
 /** Index of the next exercise (from `from`) that still has an unlogged set — or -1 if the whole workout is done. */
 function nextIncomplete(exercises, from) {
@@ -37,6 +38,7 @@ export default function WorkoutModal({ workout, profile, prs, workouts, close, s
   const currentSet = setIdx >= 0 ? currentEx.sets[setIdx] : null;
   const last = currentEx ? findLastPerformance(currentEx.name, workouts) : null;
   const lastSet = last && last.length ? last[last.length - 1] : null;
+  const delta = currentSet ? sessionDelta(currentSet.w, lastSet) : null;
 
   const totalSets = w.exercises.reduce((a, e) => a + e.sets.length, 0);
   const doneSets = w.exercises.reduce((a, e) => a + e.sets.filter(s => s.done).length, 0);
@@ -143,6 +145,7 @@ export default function WorkoutModal({ workout, profile, prs, workouts, close, s
         <div className="focusRefRow">
           <div><span>LAST SESSION</span><b>{lastSet ? `${lastSet.w} KG × ${lastSet.r}` : '—'}</b></div>
           <div><span>TARGET</span><b>{w.meta ? `${currentSet.w} KG × ${w.meta.repsMin}\u2013${w.meta.repsMax}` : `${currentSet.w} KG`}</b></div>
+          {delta && delta.delta !== 0 && <div><span>CHANGE</span><b className={delta.delta > 0 ? 'deltaUp' : 'deltaDown'}>{delta.delta > 0 ? '+' : ''}{delta.delta} KG</b></div>}
         </div>
         <button className="primary heroCta focusComplete" onClick={completeSet}><I.Check size={19} /> Set complete</button>
       </div>

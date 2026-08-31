@@ -273,3 +273,22 @@ nav button.active{animation:navActivate .3s var(--ease)}
 .prBannerRow span{color:var(--accent2);font-weight:700}
 
 @media(max-width:700px){.focusExName{font-size:26px}.focusInputs input,.focusInputs select{width:78px;padding:13px 6px;font-size:20px}.restClock{font-size:48px}}
+
+/* ================= EXERCISE DETAIL / HISTORY (Phase 1) ================= */
+.tableRow.clickable{cursor:pointer}
+.tableRow.clickable:hover{background:#14181b}
+.detailModal{max-width:480px}
+.detailTitle{font:800 22px 'Barlow Condensed';text-transform:uppercase;margin-top:4px}
+.detailBody{padding:20px 22px}
+.detailMetaRow{display:flex;gap:24px;padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.detailMetaRow div{display:flex;flex-direction:column;gap:4px}
+.detailMetaRow span{font-size:8.5px;letter-spacing:1.1px;color:#727a80;font-weight:700}
+.detailMetaRow b{font-size:12px;color:#eee}
+.detailHistoryHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.detailHistoryHead>span{font-size:9px;letter-spacing:1.2px;color:#727a80;font-weight:700}
+.trendBadge{display:flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:20px}
+.trendBadge.trend-improving{color:#7cc98a;background:#12241a}
+.trendBadge.trend-declining{color:#e08a7a;background:#26140f}
+.trendBadge.trend-stable{color:#9aa1a6;background:#181b1e}
+.deltaUp{color:#7cc98a!important}
+.deltaDown{color:#e08a7a!important}

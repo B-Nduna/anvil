@@ -99,7 +99,7 @@ export default function App() {
         generate={focus => setActive({ id: 'new', ...generateWorkout(data.profile, focus, data.prs, data.workouts) })} />}
       {page === 'program' && <Programs key="program" data={data} setData={setData} notify={notify} />}
       {page === 'progress' && <Progress key="progress" data={data} setData={setData} notify={notify} />}
-      {page === 'library' && <Library key="library" notify={notify} />}
+      {page === 'library' && <Library key="library" notify={notify} workouts={data.workouts} />}
       {page === 'profile' && <Profile key="profile" data={data} setData={setData} notify={notify} />}
     </main>
     {active && <WorkoutModal workout={active} profile={data.profile} prs={data.prs} workouts={data.workouts} close={() => setActive(null)} save={saveWorkout} notify={notify} />}
