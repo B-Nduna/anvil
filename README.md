@@ -19,6 +19,25 @@ a validated strength-standards reference — all running client-side.
 
 ## Highlights
 
+- **Touch-first set logging.** Weight, reps, and RIR during a workout are
+  now a large `−`/`+` Stepper (`src/ui/Controls.jsx`) and a segmented
+  control instead of a number `<input>` and a `<select>` — no keyboard
+  needed to log a set. Weight step size adapts to equipment (1kg for
+  dumbbells, 2.5kg otherwise). Holding either stepper button repeats the
+  step automatically after a short delay for large changes.
+- **Mobile bottom navigation, fixed.** It existed before this pass but was
+  silently broken — icon-only, no visible labels, caused by a CSS cascade
+  bug where a tablet-breakpoint rule was hiding nav-button text and the
+  mobile breakpoint never re-enabled it. Found via an actual screenshot,
+  not a DOM assertion. Fixed, with labels visible and 44px+ touch targets.
+- **App-wide font-fallback bug, fixed.** Every `'Barlow Condensed'`
+  declaration (18 of them) had no fallback font. If the Google Fonts CDN
+  fails to load — which it does in offline/sandboxed environments, and can
+  for real users behind slow connections or blockers — every heading
+  silently fell back to the browser's default serif font instead of a
+  sans-serif. Also only caught via a screenshot; text-based checks don't
+  see font rendering.
+
 - **Athlete Profile onboarding.** An 8-step wizard — About You, Training
   History, Goals, Training Style, Availability, Equipment, Limitations,
   then a review screen — builds a real athlete profile, not just a goal
@@ -176,6 +195,25 @@ The `engine/` modules have no React dependency and can be tested standalone.
   comments in `strengthStandards.js` for full methodology.
 
 ## Known limitations / roadmap
+
+- **This mobile/touch-controls pass is deliberately partial.** Did: the
+  Stepper/SegmentedControl primitives, wiring them into set logging (the
+  brief's explicitly stated highest-priority item), the mobile nav fix,
+  and the font fallback fix. Did **not** do: bottom sheets (exercise
+  picker, filters, and workout settings still use inline dropdowns/full
+  pages rather than a swipe-dismissible sheet), sliders, a Toggle
+  primitive (nothing in the app is currently a true on/off setting), swipe
+  gestures between exercises/cards, a formal design-token file
+  (spacing/radii/shadows are consistent by convention in `styles.css`, not
+  centralized as named tokens), and a desktop-vs-mobile information-
+  density pass (desktop currently reuses the same layouts at a wider
+  viewport). The Edit-workout view still uses compact table-style inputs
+  rather than touch controls — it's the secondary/power-user view, not the
+  primary logging flow, so it was deprioritized this round.
+- **Account actions (reset & sign out) moved from the sidebar to Profile.**
+  The sidebar's `.sideFoot` is hidden on mobile now (no room for it in a
+  bottom nav bar), so the reset action needed a permanent home reachable
+  on every viewport.
 
 - **Training-OS roadmap.** The product direction is an explicitly phased
   progression: Phase 1 (exercise history/performance intelligence) is

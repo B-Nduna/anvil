@@ -12,7 +12,7 @@ const EXPERIENCE_OPTIONS = ['Beginner', 'Intermediate', 'Advanced', 'Elite'];
 const EQUIPMENT_OPTIONS = ['Full gym', 'Home gym', 'Dumbbells', 'Bodyweight', 'Minimal equipment'];
 const SEX_OPTIONS = ['Male', 'Female', 'Prefer not to say'];
 
-export default function Profile({ data, setData, notify }) {
+export default function Profile({ data, setData, notify, onReset }) {
   const [p, setP] = useState(data.profile);
   const set = (k, v) => setP(x => ({ ...x, [k]: v }));
   const toggleLimitation = l => setP(x => ({ ...x, limitations: x.limitations.includes(l) ? x.limitations.filter(y => y !== l) : [...x.limitations, l] }));
@@ -102,5 +102,11 @@ export default function Profile({ data, setData, notify }) {
     </Card>
 
     <button className="primary full" onClick={save} style={{ marginTop: 4 }}><I.Save size={16} /> Save profile</button>
+
+    <div className="sectionTitle"><div><span className="eyebrow">ACCOUNT</span><h2>Session</h2></div></div>
+    <Card title="Account">
+      <p className="factNote">Signing out clears your profile, program and workout history from this device.</p>
+      <button className="secondary full" onClick={() => { if (confirm('Sign out and reset all data? This clears your profile, program and workout history.')) onReset(); }}><I.RotateCcw size={16} /> Reset & sign out</button>
+    </Card>
   </section>;
 }

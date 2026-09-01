@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import * as I from 'lucide-react';
-import { generateWorkout } from '../engine/workoutEngine';
+import { generateWorkout, EXERCISE_DB } from '../engine/workoutEngine';
 import { findLastPerformance } from '../engine/progressiveOverload';
 import { sessionDelta } from '../engine/exerciseHistory';
+import { Stepper, SegmentedControl } from '../ui/Controls';
 
 /** Index of the next exercise (from `from`) that still has an unlogged set — or -1 if the whole workout is done. */
 function nextIncomplete(exercises, from) {
@@ -39,6 +40,9 @@ export default function WorkoutModal({ workout, profile, prs, workouts, close, s
   const last = currentEx ? findLastPerformance(currentEx.name, workouts) : null;
   const lastSet = last && last.length ? last[last.length - 1] : null;
   const delta = currentSet ? sessionDelta(currentSet.w, lastSet) : null;
+  // Increment size depends on equipment (dumbbells step finer than barbell plates) — matches
+  // real-world load granularity. Custom/typed-in exercises won't be in the database; default to 2.5kg.
+  const weightStep = currentEx ? ({ Dumbbells: 1 }[EXERCISE_DB.find(e => e.name === currentEx.name)?.equipment] ?? 2.5) : 2.5;
 
   const totalSets = w.exercises.reduce((a, e) => a + e.sets.length, 0);
   const doneSets = w.exercises.reduce((a, e) => a + e.sets.filter(s => s.done).length, 0);
@@ -138,9 +142,9 @@ export default function WorkoutModal({ workout, profile, prs, workouts, close, s
         <h1 className="focusExName">{currentEx.name}</h1>
         <span className="focusSetLabel">SET {setIdx + 1} OF {currentEx.sets.length}</span>
         <div className="focusInputs">
-          <label>KG<input type="number" inputMode="decimal" value={currentSet.w} onChange={e => updateSet({ w: Number(e.target.value) })} /></label>
-          <label>REPS<input type="number" inputMode="numeric" value={currentSet.r} onChange={e => updateSet({ r: Number(e.target.value) })} /></label>
-          <label>RIR<select value={currentSet.rir} onChange={e => updateSet({ rir: Number(e.target.value) })}><option>0</option><option>1</option><option>2</option><option>3</option></select></label>
+          <Stepper label="KG" value={currentSet.w} onChange={w => updateSet({ w })} step={weightStep} min={0} max={500} />
+          <Stepper label="REPS" value={currentSet.r} onChange={r => updateSet({ r })} step={1} min={0} max={50} />
+          <SegmentedControl label="RIR" value={currentSet.rir} onChange={rir => updateSet({ rir })} options={[0, 1, 2, 3]} />
         </div>
         <div className="focusRefRow">
           <div><span>LAST SESSION</span><b>{lastSet ? `${lastSet.w} KG × ${lastSet.r}` : '—'}</b></div>

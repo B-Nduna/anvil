@@ -85,7 +85,6 @@ export default function App() {
       <nav>{nav.map(([id, l, Icon]) => <button className={page === id ? 'active' : ''} onClick={() => setPage(id)} key={id} title={l}><Icon size={18} /><span>{l}</span></button>)}</nav>
       <div className="sideFoot">
         <div className="streak"><span>STREAK</span><strong>{streak} {streak === 1 ? 'DAY' : 'DAYS'}</strong><div className="bar"><i style={{ width: consistency + '%' }} /></div><small className="streakSub">{weeklyDone}/{freqTarget || '—'} this week</small></div>
-        <button onClick={() => { if (confirm('Sign out and reset all data? This clears your profile, program and workout history.')) resetAll(); }}><I.RotateCcw size={15} /> Reset & sign out</button>
       </div>
     </aside>
     <main>
@@ -100,7 +99,7 @@ export default function App() {
       {page === 'program' && <Programs key="program" data={data} setData={setData} notify={notify} />}
       {page === 'progress' && <Progress key="progress" data={data} setData={setData} notify={notify} />}
       {page === 'library' && <Library key="library" notify={notify} workouts={data.workouts} />}
-      {page === 'profile' && <Profile key="profile" data={data} setData={setData} notify={notify} />}
+      {page === 'profile' && <Profile key="profile" data={data} setData={setData} notify={notify} onReset={resetAll} />}
     </main>
     {active && <WorkoutModal workout={active} profile={data.profile} prs={data.prs} workouts={data.workouts} close={() => setActive(null)} save={saveWorkout} notify={notify} />}
     {toast && <div className={'toast' + (toastLeaving ? ' leaving' : '')}><I.CheckCircle2 size={17} />{toast}</div>}
