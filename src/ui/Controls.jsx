@@ -55,3 +55,21 @@ export function SegmentedControl({ label, value, onChange, options }) {
     </div>
   </div>;
 }
+
+/**
+ * Touch-drag slider for a continuous range (e.g. session length). Built on a native
+ * <input type="range"> rather than custom pointer-drag logic — the native control already
+ * handles touch, mouse, and keyboard input correctly across browsers; this just restyles it.
+ * `marks` are optional reference labels shown under the track (purely visual, don't snap to them).
+ */
+export function Slider({ label, value, onChange, min, max, step = 1, unit = '', marks }) {
+  const pct = max > min ? ((value - min) / (max - min)) * 100 : 0;
+  return <div className="sliderWrap">
+    {label && <span className="stepperLabel">{label}</span>}
+    <div className="sliderValue">{value}{unit}</div>
+    <input type="range" className="sliderInput" min={min} max={max} step={step} value={value}
+      style={{ '--pct': pct + '%' }}
+      onChange={e => onChange(Number(e.target.value))} aria-label={label} />
+    {marks && <div className="sliderMarks">{marks.map(m => <span key={m}>{m}</span>)}</div>}
+  </div>;
+}

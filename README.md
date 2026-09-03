@@ -19,6 +19,21 @@ a validated strength-standards reference — all running client-side.
 
 ## Highlights
 
+- **Fixed a real reported bug: Profile's Frequency field would "stick" at 7
+  and not respond to input.** Root cause: `Math.min(7, Number(e.target.value))`
+  ran on every keystroke, so a mobile numeric keyboard producing an
+  intermediate value above 7 (common — multi-digit entry, autocomplete
+  quirks) snapped the displayed value back to 7 immediately, making it look
+  frozen. Replaced with a `SegmentedControl` — a 1–7 range with no typing
+  involved can't hit this class of bug at all. Verified by tapping through
+  1/2/3/4/5/6/7 in sequence and confirming each one actually took.
+- **`Slider` primitive added** (`src/ui/Controls.jsx`) for continuous
+  ranges — built on a native `<input type="range">` rather than custom
+  pointer-drag logic, since the native control already handles touch,
+  mouse, and keyboard correctly. Used for Session Length.
+- Profile's Age/Weight/Height/Training age fields converted from raw
+  number inputs to `Stepper` for the same reason — consistent with the
+  set-logging controls, no mobile-keyboard fighting.
 - **Touch-first set logging.** Weight, reps, and RIR during a workout are
   now a large `−`/`+` Stepper (`src/ui/Controls.jsx`) and a segmented
   control instead of a number `<input>` and a `<select>` — no keyboard
