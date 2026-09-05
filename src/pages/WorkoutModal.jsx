@@ -12,7 +12,7 @@ function nextIncomplete(exercises, from) {
   return -1;
 }
 
-export default function WorkoutModal({ workout, profile, prs, workouts, close, save, notify }) {
+export default function WorkoutModal({ workout, profile, prs, workouts, close, onFinished, save, notify }) {
   const [w, setW] = useState(() => JSON.parse(JSON.stringify(workout)));
   const [view, setView] = useState('focus'); // 'focus' | 'edit' | 'complete'
   const [exIndex, setExIndex] = useState(() => Math.max(0, nextIncomplete(workout.exercises, 0)));
@@ -77,7 +77,7 @@ export default function WorkoutModal({ workout, profile, prs, workouts, close, s
   const isFresh = w.id === 'new' && doneSets === 0;
 
   if (view === 'complete' && summary) {
-    const finish = () => dismiss(close);
+    const finish = () => dismiss(onFinished || close);
     return <div className={'modalBg' + (closing ? ' closing' : '')}><div className="modal complete">
       <div className="completeBody">
         <span className="tag">SESSION COMPLETE</span>

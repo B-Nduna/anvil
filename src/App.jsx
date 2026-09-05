@@ -6,6 +6,7 @@ import { recalcIdentity } from './engine/identity';
 import { generateWorkout, detectPRs } from './engine/workoutEngine';
 import { weeklyCount, currentStreak } from './engine/workoutDates';
 import { asset } from './assetPath';
+import { getInitialTheme, applyTheme } from './theme';
 import { LoadingScreen, AuthScreen, Onboarding, BuildingScreen } from './screens/Boot';
 import Today from './pages/Today';
 import Train from './pages/Train';
@@ -20,6 +21,7 @@ const pageTitle = p => ({ today: 'Today', train: 'Train', program: 'Programs', p
 export default function App() {
   const [account, setAccount] = useState(loadAccount);
   const [data, setData] = useState(loadState);
+  const [theme, setTheme] = useState(getInitialTheme);
   const [stage, setStage] = useState('loading');
   const [page, setPage] = useState('today');
   const [active, setActive] = useState(null);
@@ -28,6 +30,8 @@ export default function App() {
   const toastToken = useRef(0);
 
   useEffect(() => saveState(data), [data]);
+  useEffect(() => applyTheme(theme), [theme]);
+  const toggleTheme = () => setTheme(t => (t === 'light' ? 'dark' : 'light'));
   useEffect(() => {
     const t = setTimeout(() => {
       if (account && data.onboarded) setStage('app');
@@ -90,7 +94,7 @@ export default function App() {
     <main>
       <header>
         <div><h1>{pageTitle(page)}</h1></div>
-        <div className="headActions"><button className="iconBtn" onClick={() => notify('No new notifications')} title="Notifications"><I.Bell size={18} /></button><button className="avatar" onClick={() => setPage('profile')} title="Profile"><img src={asset("anvil-mark.png")} alt="ANVIL" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /></button></div>
+        <div className="headActions"><button className="iconBtn" onClick={toggleTheme} title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'} aria-label="Toggle color theme">{theme === 'light' ? <I.Moon size={18} /> : <I.Sun size={18} />}</button><button className="iconBtn" onClick={() => notify('No new notifications')} title="Notifications"><I.Bell size={18} /></button><button className="avatar" onClick={() => setPage('profile')} title="Profile"><img src={asset("anvil-mark.png")} alt="ANVIL" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /></button></div>
       </header>
       {page === 'today' && <Today key="today" data={data} go={setPage} start={setActive} weeklyDone={weeklyDone} freqTarget={freqTarget} streak={streak} />}
       {page === 'train' && <Train key="train" data={data} setData={setData} start={setActive} notify={notify}
@@ -101,7 +105,7 @@ export default function App() {
       {page === 'library' && <Library key="library" notify={notify} workouts={data.workouts} />}
       {page === 'profile' && <Profile key="profile" data={data} setData={setData} notify={notify} onReset={resetAll} />}
     </main>
-    {active && <WorkoutModal workout={active} profile={data.profile} prs={data.prs} workouts={data.workouts} close={() => setActive(null)} save={saveWorkout} notify={notify} />}
+    {active && <WorkoutModal workout={active} profile={data.profile} prs={data.prs} workouts={data.workouts} close={() => setActive(null)} onFinished={() => { setActive(null); setPage('today'); }} save={saveWorkout} notify={notify} />}
     {toast && <div className={'toast' + (toastLeaving ? ' leaving' : '')}><I.CheckCircle2 size={17} />{toast}</div>}
   </div>;
 }

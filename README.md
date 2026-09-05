@@ -19,6 +19,22 @@ a validated strength-standards reference — all running client-side.
 
 ## Highlights
 
+- **Light and dark mode.** A real semantic color-token system
+  (`--bg`, `--panel`, `--text`, `--text-muted`, `--line`, `--success`,
+  `--danger`, etc.) replaces ~100 scattered hardcoded hex values across the
+  stylesheet, with a `[data-theme="light"]` override block providing the
+  light-mode palette. Defaults to the OS/browser color-scheme preference on
+  first load, remembers an explicit choice via `localStorage`, and toggles
+  from a sun/moon icon in the header. Accent color (amber) stays the same
+  in both themes by design — it's ANVIL's brand identity, not a light/dark
+  concern.
+- **Fixed:** the "Back to Today" button on the workout-completion screen
+  used to only close the modal without actually navigating to Today (found
+  while testing the theme toggle mid-session) — it now does. Canceling a
+  workout mid-session correctly still stays on whatever page you started
+  from.
+
+
 - **Fixed a real reported bug: Profile's Frequency field would "stick" at 7
   and not respond to input.** Root cause: `Math.min(7, Number(e.target.value))`
   ran on every keystroke, so a mobile numeric keyboard producing an
@@ -210,6 +226,20 @@ The `engine/` modules have no React dependency and can be tested standalone.
   comments in `strengthStandards.js` for full methodology.
 
 ## Known limitations / roadmap
+
+- **A separate, larger brief was received alongside the "light and dark
+  mode" request** covering settings-propagation architecture (e.g.
+  changing training days should recalculate the whole week, not just be
+  stored), reducing navigation to 4 tabs, and a broader visual system
+  overhaul. That's a genuinely different, much larger effort than a theme
+  toggle, and wasn't attempted this round — flagging it explicitly rather
+  than silently ignoring it or doing a shallow pass. Worth noting: some of
+  it is already true today (Profile save already recalculates Training
+  Emphasis and rebuilds the calendar when frequency/style change — see
+  above), but the deeper "changing training days rebalances the actual
+  program, preserves history" loop described in that brief is not yet
+  built.
+
 
 - **This mobile/touch-controls pass is deliberately partial.** Did: the
   Stepper/SegmentedControl primitives, wiring them into set logging (the
