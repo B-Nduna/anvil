@@ -19,6 +19,24 @@ a validated strength-standards reference — all running client-side.
 
 ## Highlights
 
+- **Light/dark mode inconsistencies fixed with a full color audit**, not
+  spot fixes. The first theme pass only converted the ~20 most-frequent
+  hardcoded colors; a full sweep found ~50 more one-off literals (dark
+  card/badge backgrounds, borders, muted text grays) that had been added
+  organically across many earlier feature passes and never routed through
+  the token system — those were the "plain dark, doesn't blend" patches.
+  Classified programmatically by which CSS property actually used each
+  color (background vs. border vs. text) rather than guessed by eye, then
+  mapped each to the nearest existing semantic token (or a brightness-
+  matched one, for text colors). Found and fixed one clearly broken case
+  along the way — an exercise's trend badge ("Holding steady") was
+  rendering as a dark pill on the light background. Verified with fresh
+  screenshots across Today, Train, Programs, Progress, Library (including
+  the exercise detail panel), the workout focus mode, the completion
+  screen, and Profile, in both themes, plus a full functional regression
+  (nav, workout-to-completion, zero console errors) in both color schemes.
+
+
 - **Light and dark mode.** A real semantic color-token system
   (`--bg`, `--panel`, `--text`, `--text-muted`, `--line`, `--success`,
   `--danger`, etc.) replaces ~100 scattered hardcoded hex values across the
